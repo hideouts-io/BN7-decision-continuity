@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#050914" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="description" content="A synthetic Decision Continuity walkthrough: trace changed evidence to an accountable human review." />
+    <title>BN7 | Decision Continuity</title>
+    <link rel="stylesheet" href="/design/brand.css" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to decision workspace</a>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="identity" href="#main" aria-label="Bridge Node 7 Decision Continuity workspace">
+          <span class="mark" aria-hidden="true"><span>7</span></span>
+          <span class="identity-text"><span class="brand-name">Bridge Node 7</span><span class="product-name">Decision Continuity</span></span>
+        </a>
+        <nav class="header-nav" aria-label="Workspace sections">
+          <a href="#evidence">Evidence</a>
+          <a href="#review">Review</a>
+          <a href="#decision-history">History</a>
+        </nav>
+        <span class="environment-label"><span aria-hidden="true" class="environment-dot"></span>Local demonstration</span>
+      </div>
+    </header>
+
+    <main id="main" class="shell" tabindex="-1">
+      <section class="session-bar" aria-label="Local demo sessions">
+        <div class="session-picker">
+          <label for="session-select">Demo session</label>
+          <select id="session-select" data-testid="session-select" aria-describedby="session-hint"></select>
+        </div>
+        <button id="new-session" data-testid="new-session" class="btn secondary compact" type="button">New session<span aria-hidden="true">＋</span></button>
+        <span id="session-id" data-testid="session-id" class="session-identity">Loading local synthetic session</span>
+        <p id="session-hint" class="session-hint">A new session keeps earlier history. A session link selects a record stored in this browser; it does not share the record remotely.</p>
+      </section>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>Evidence → accountable decisions</p>
+          <h1 id="page-title">When evidence changes,<br /><span>know what to review.</span></h1>
+          <p class="intro-description">Compare a source change. Follow the assumption it affects. Record a human outcome while keeping the original reasoning in view.</p>
+        </div>
+        <aside class="scenario-note" aria-label="Demonstration scope">
+          <span class="scope-label">Synthetic demonstration</span>
+          <h2>A read-only assistant<br />requests write access.</h2>
+          <p>Explore one fictional case. A new request is a reason to review; it does not prove access was granted or used.</p>
+          <span class="scenario-reference">Scenario DC-001 · AI assurance</span>
+        </aside>
+      </section>
+
+      <section class="journey-card panel" aria-labelledby="journey-title">
+        <div class="journey-copy"><p id="journey-status" class="eyebrow">Your next step</p><h2 id="journey-title">Start with the source comparison.</h2><p id="journey-description">Load the unchanged control first, then compare the new write-access request.</p></div>
+        <a id="journey-next" data-testid="journey-next" class="btn primary" href="#evidence">Compare evidence<span aria-hidden="true">→</span></a>
+      </section>
+
+      <nav aria-label="Decision continuity workflow">
+        <ol class="workflow-ribbon">
+          <li><a id="step-evidence" data-testid="step-evidence" href="#evidence"><span class="step-index">01</span><span class="step-copy"><strong>Compare evidence</strong><small id="step-evidence-status">Choose a source version</small></span><span class="step-arrow" aria-hidden="true">↗</span></a></li>
+          <li><a id="step-impact" data-testid="step-impact" href="#impact"><span class="step-index">02</span><span class="step-copy"><strong>Trace the impact</strong><small id="step-impact-status">Follow the linked assumption</small></span><span class="step-arrow" aria-hidden="true">↗</span></a></li>
+          <li><a id="step-review" data-testid="step-review" href="#review"><span class="step-index">03</span><span class="step-copy"><strong>Human review</strong><small id="step-review-status">A person decides</small></span><span class="step-arrow" aria-hidden="true">↗</span></a></li>
+          <li><a id="step-history" data-testid="step-history" href="#decision-history"><span class="step-index">04</span><span class="step-copy"><strong>Preserve history</strong><small id="step-history-status">Inspect the earlier basis</small></span><span class="step-arrow" aria-hidden="true">↗</span></a></li>
+        </ol>
+      </nav>
+
+      <div id="error-message" data-testid="error-message" class="message error-message" role="alert" hidden></div>
+      <div id="feedback-message" data-testid="feedback-message" class="message feedback-message" role="status" aria-live="polite" aria-atomic="true"></div>
+
+      <section id="decision" class="decision-panel panel" aria-labelledby="decision-heading" tabindex="-1">
+        <div class="section-heading">
+          <div><p class="eyebrow">Decision context · DEC-001</p><h2 id="decision-heading">The approval that set the boundary.</h2></div>
+          <span id="decision-status" data-testid="decision-status" class="badge">Loading decision</span>
+        </div>
+        <p class="section-lede">The original approval was limited to read-only summarization. Keep its basis in view as the review develops.</p>
+        <p id="decision-current" data-testid="decision-current" class="decision-statement">The current decision will appear here.</p>
+        <div class="decision-context">
+          <div class="assumption-card">
+            <span class="field-label">Linked assumption · ASM-001</span>
+            <p>The assistant requests only read access within its approved scope.</p>
+            <span id="assumption-status" data-testid="assumption-status" class="badge">Loading assumption</span>
+          </div>
+          <details class="original-decision">
+            <summary data-testid="original-summary">Inspect the original decision and rationale<span aria-hidden="true">↗</span></summary>
+            <div id="decision-original" data-testid="decision-original"></div>
+          </details>
+        </div>
+        <a class="section-next" data-testid="decision-next" href="#evidence">Compare the evidence<span aria-hidden="true">→</span></a>
+      </section>
+
+      <section id="evidence" class="workspace-section" aria-labelledby="evidence-heading" tabindex="-1">
+        <div class="section-heading workspace-heading">
+          <div><p class="eyebrow">01 / Compare</p><h2 id="evidence-heading">See the change before judging it.</h2><p class="section-lede">Compare the selected manifest against the original approval basis. The unchanged control shows why a new version alone should not trigger review.</p></div>
+          <span class="section-caption">Synthetic permission manifest</span>
+        </div>
+        <div class="evidence-actions" role="group" aria-label="Choose a synthetic source version">
+          <button id="load-control" data-testid="load-control" class="btn primary" type="button">Load unchanged control</button>
+          <button id="load-changed" data-testid="load-changed" class="btn secondary" type="button"><span class="button-icon" aria-hidden="true">＋</span>Load write-access request</button>
+          <p>Start with the unchanged control, then load the write-access request.</p>
+        </div>
+        <details class="permission-guide"><summary data-testid="permission-guide-summary">How to read requested, granted, and observed access</summary><dl><div><dt>Requested</dt><dd>What the manifest asks to access.</dd></div><div><dt>Declared granted</dt><dd>What this synthetic source says was granted; no live system has been queried.</dd></div><div><dt>Observed</dt><dd>Activity supported by runtime evidence. This case has no observed activity; that does not prove activity never occurred.</dd></div></dl></details>
+
+        <div class="evidence-grid">
+          <article class="source-card panel" aria-labelledby="baseline-heading">
+            <div class="card-heading"><div><span class="field-label">Approval basis</span><h3 id="baseline-heading">Original evidence</h3></div><span class="source-mark" aria-hidden="true">↳</span></div>
+            <div id="source-baseline" data-testid="source-baseline" class="source-content">The preserved baseline will appear here.</div>
+          </article>
+          <article class="source-card panel current-source" aria-labelledby="current-heading">
+            <div class="card-heading"><div><span class="field-label">Selected comparison</span><h3 id="current-heading">Selected evidence</h3></div><span class="source-mark" aria-hidden="true">↗</span></div>
+            <div id="source-current" data-testid="source-current" class="source-content">Select an evidence version to begin.</div>
+          </article>
+        </div>
+
+        <article class="comparison-card panel" aria-labelledby="comparison-heading">
+          <div class="card-heading"><div><span class="field-label">Evidence comparison</span><h3 id="comparison-heading">The relevant difference</h3></div><span class="minor-label">Explicit source fields</span></div>
+          <div id="evidence-diff" data-testid="evidence-diff" class="comparison-content">A comparison will appear after selecting evidence.</div>
+        </article>
+        <a class="section-next" data-testid="evidence-next" href="#impact">Inspect the evidence relationship<span aria-hidden="true">→</span></a>
+      </section>
+
+      <section id="impact" class="workspace-section" aria-labelledby="impact-heading" tabindex="-1">
+        <div class="section-heading workspace-heading"><div><p class="eyebrow">02 / Trace</p><h2 id="impact-heading">Follow the reasoning behind the decision.</h2><p class="section-lede">Expand each linked record to see what the source supports, which assumption it affects, and whether the original decision needs attention.</p></div><span class="section-caption">Explicit evidence relationships</span></div>
+        <article class="impact-card panel">
+          <div id="impact-path" data-testid="impact-path" class="impact-content">Select evidence to inspect the affected relationship.</div>
+          <p class="accountability-note"><span aria-hidden="true">↳</span>Change detection identifies a reason to review. The reviewer decides the outcome.</p>
+        </article>
+        <a class="section-next" data-testid="impact-next" href="#review">See review status<span aria-hidden="true">→</span></a>
+      </section>
+
+      <section id="review" class="workspace-section" aria-labelledby="review-heading" tabindex="-1">
+        <div class="section-heading workspace-heading"><div><p class="eyebrow">03 / Review</p><h2 id="review-heading">The evidence informs. You decide.</h2><p class="section-lede">Assess the changed request, explain what the evidence supports, and record the scope that should apply next.</p></div><span class="section-caption">Human accountability</span></div>
+        <article class="review-card panel">
+          <div class="review-overview">
+            <div class="review-assignee"><span class="avatar" aria-hidden="true">ML</span><div><span class="field-label">Responsible reviewer</span><h3>Morgan Lee</h3><p>Synthetic reviewer · no real authentication</p></div></div>
+            <span id="review-status" data-testid="review-status" class="badge">Awaiting evidence</span>
+          </div>
+          <div class="review-start"><div><p id="review-guidance">Choose evidence before opening a review. The original decision stays preserved.</p><span id="review-id" data-testid="review-id" class="review-reference"></span><a id="review-next" data-testid="review-next" class="section-next" href="#evidence">Choose evidence<span aria-hidden="true">→</span></a></div><button id="open-review" data-testid="open-review" class="btn primary" type="button" disabled>Open assigned review<span aria-hidden="true">↗</span></button></div>
+          <form id="review-form" data-testid="review-form" class="review-form" hidden>
+            <div class="form-heading"><h3>Record the review outcome</h3><p>Explain your reasoning and the decision scope that should apply next.</p></div>
+            <div class="form-grid">
+              <div class="form-field"><label for="reviewer">Reviewer</label><input id="reviewer" data-testid="reviewer" name="reviewer" type="text" value="Morgan Lee — synthetic reviewer" readonly required aria-describedby="reviewer-hint" /><small id="reviewer-hint">A fixed synthetic identity for this demonstration.</small></div>
+              <div class="form-field"><label for="outcome">Outcome <span class="required-label">Required</span></label><select id="outcome" data-testid="outcome" name="outcome" required aria-describedby="outcome-explanation outcome-hint"><option value="">Choose an outcome</option><option value="reaffirm">Reaffirm the decision</option><option value="revise">Revise the decision</option><option value="withdraw">Withdraw the decision</option><option value="defer">Defer pending evidence</option></select><p id="outcome-explanation" data-testid="outcome-explanation" class="outcome-explanation">Choose an outcome to see how it affects this review and the decision history.</p><small id="outcome-hint">The application does not choose an outcome for you.</small></div>
+            </div>
+            <div class="form-field"><label for="rationale">Review rationale <span class="required-label">Required</span></label><textarea id="rationale" data-testid="rationale" name="rationale" rows="4" required minlength="16" maxlength="2000" aria-describedby="rationale-hint" placeholder="Explain what the evidence supports, what remains uncertain, and why this outcome is appropriate."></textarea><small id="rationale-hint">16–2,000 characters. Include uncertainty and any further evidence needed.</small></div>
+            <div class="form-field"><label for="decision-text">Resulting decision scope or next step <span class="required-label">Required</span></label><textarea id="decision-text" data-testid="decision-text" name="decision-text" rows="3" required minlength="16" maxlength="1000" aria-describedby="decision-text-hint" placeholder="State the scope that applies after this review, or the evidence needed before deciding."></textarea><small id="decision-text-hint">16–1,000 characters. The original approval remains in history.</small></div>
+            <div class="form-submit"><p>Recording preserves the reviewer, rationale, evidence versions, and time.</p><button id="record-outcome" data-testid="record-outcome" class="btn primary" type="submit">Record human outcome<span aria-hidden="true">↗</span></button></div>
+          </form>
+        </article>
+      </section>
+
+      <section id="decision-history" class="workspace-section history-section" aria-labelledby="history-heading" tabindex="-1">
+        <div class="section-heading workspace-heading"><div><p class="eyebrow">04 / Preserve</p><h2 id="history-heading">Keep the full chain of reasoning.</h2><p id="history-summary" class="section-lede">Inspect the original decision, selected evidence, and human outcomes. Export this session as a separate JSON record.</p></div><button id="export-history" data-testid="export-history" class="btn secondary compact" type="button">Export history<span aria-hidden="true">↓</span></button></div>
+        <div class="history-card panel"><div id="history" data-testid="history" class="history-content" tabindex="-1">The original decision and subsequent review history will appear here.</div></div>
+      </section>
+      <aside class="storage-note" aria-label="Local storage limitations"><span class="note-symbol" aria-hidden="true">i</span><p><strong>Local-only browser storage.</strong> This demonstration stores synthetic records in this browser. There is no real authentication, shared workspace, or live source connection. Export history to retain a separate copy.</p></aside>
+    </main>
+
+    <footer class="site-footer"><div class="shell footer-inner"><span>Bridge Node 7 <span class="footer-divider" aria-hidden="true">/</span> Decision Continuity</span><a href="https://bridgenode7.com/" target="_blank" rel="noopener noreferrer">Explore Bridge Node 7<span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div></footer>
+  </body>
+</html>
