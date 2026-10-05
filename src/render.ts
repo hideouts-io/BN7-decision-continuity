@@ -1,3 +1,4 @@
+import { evidenceForState } from "./model.ts";
 import type { DemoState, OutcomeRecord } from "./model.ts";
 import { ORIGINAL_DECISION, getEvidence, requiresReview } from "./scenario.ts";
 import type { Evidence, Outcome } from "./scenario.ts";
@@ -70,6 +71,7 @@ function evidenceMarkup(evidence: Evidence): string {
     <div class="evidence-field"><dt>Declared granted access</dt><dd><code>${escapeHtml(evidence.grantedPermissions.join(", "))}</code></dd></div>
     <div class="evidence-field"><dt>Runtime activity</dt><dd>${escapeHtml(evidence.observedActivity)}</dd></div>
     <div class="evidence-field"><dt>Synthetic capture</dt><dd>${formatTime(evidence.capturedAt)} Pacific</dd></div>
+    ${evidence.id === "EV-004" ? `<div class="evidence-field"><dt>Source note</dt><dd>${escapeHtml(evidence.sourceNote)}</dd></div><div class="evidence-field"><dt>Provenance</dt><dd>Manually entered synthetic manifest; no live source queried.</dd></div>` : ""}
   </dl>`;
 }
 
@@ -84,7 +86,9 @@ function outcomeMarkup(outcome: OutcomeRecord): string {
 }
 
 function historyMarkup(state: DemoState): string {
-  const sourceEntries: { recordedAt: string; markup: string }[] = state.sources.map((source): { recordedAt: string; markup: string } => ({ recordedAt: source.recordedAt, markup: `<li class="history-entry" data-testid="source-entry">
+  const sourceEntries: { recordedAt: string; markup: string }[] = state.sources.map((source): { recordedAt: string; markup: string } => ({ recordedAt: source.recordedAt, markup: state.schemaVersion === 2 && state.customEvidence?.id === source.id
+    ? `<li class="history-entry" data-testid="capture-entry"><div class="history-entry-head"><strong>Recorded &amp; selected synthetic version EV-004</strong><time datetime="${source.recordedAt}">${formatTime(source.recordedAt)} Pacific</time></div><p>${escapeHtml(state.customEvidence.evidence.sourceNote)}</p><p class="history-meta">Manual entry · ${source.id} · ${source.evidence.sourceId}</p><details><summary>Inspect the immutable capture</summary>${evidenceMarkup(source.evidence)}</details></li>`
+    : `<li class="history-entry" data-testid="source-entry">
     <div class="history-entry-head"><strong>Selected evidence ${source.evidence.id}</strong><time datetime="${source.recordedAt}">${formatTime(source.recordedAt)} Pacific</time></div>
     <p>Requested: ${escapeHtml(source.evidence.requestedPermissions.join(", "))}. Declared grant: ${escapeHtml(source.evidence.grantedPermissions.join(", "))}. Activity: not observed.</p>
   </li>` }));
@@ -105,9 +109,40 @@ function historyMarkup(state: DemoState): string {
   </ol>`;
 }
 
+function renderVersionEntry(state: DemoState): void {
+  getElement("version-entry").hidden = state.schemaVersion !== 2;
+  getElement("evidence-form").hidden = state.schemaVersion !== 2 || state.customEvidence !== null || state.review !== null;
+  if (state.schemaVersion !== 2) return;
+  setText("version-status", state.customEvidence !== null ? "EV-004 preserved" : (state.review !== null ? "Capture closed" : "No version recorded"));
+  setText("version-guidance", state.customEvidence !== null
+    ? "EV-004 and its source note are preserved. Use Load entered version to return to this comparison. Start another version session to enter different evidence."
+    : (state.review !== null ? "This session's review has already opened against a preset version. Its evidence cannot be replaced. Start another version session to record a new capture."
+      : "Record one fictional Atlas manifest. Requested access and declared grants are independent; runtime activity remains unobserved. Use synthetic material only."));
+}
+
+function permissionDifference(label: string, baseline: readonly string[], current: readonly string[]): string {
+  const added: readonly string[] = current.filter((value: string): boolean => !baseline.includes(value));
+  const removed: readonly string[] = baseline.filter((value: string): boolean => !current.includes(value));
+  const rows: string[] = [
+    ...added.map((value: string): string => `<div class="diff-row diff-added"><span class="diff-label">Added ${label}</span><code>+ ${escapeHtml(value)}</code></div>`),
+    ...removed.map((value: string): string => `<div class="diff-row diff-removed"><span class="diff-label">Removed ${label}</span><code>− ${escapeHtml(value)}</code></div>`),
+  ];
+  return rows.length === 0 ? `<div class="diff-row"><span class="diff-label">${label === "request" ? "Requested access" : "Declared grants"} unchanged</span><code>${escapeHtml(current.join(", "))}</code></div>` : rows.join("");
+}
+
+function comparisonMarkup(current: Evidence): string {
+  const original: Evidence = getEvidence("EV-001");
+  const grantChanged: boolean = current.grantedPermissions.length !== original.grantedPermissions.length || current.grantedPermissions.some((permission): boolean => !original.grantedPermissions.includes(permission));
+  const explanation: string = requiresReview(current)
+    ? "The requested write access challenges ASM-001 and suggests review. Declared grants are separate source claims; no runtime activity is observed."
+    : (grantChanged ? "No request-assumption contradiction. Declared grants differ and need separate assessment; the narrow ASM-001 trigger does not cover grant changes. This comparison does not establish that the approval is safe."
+      : "No relevant change under the ASM-001 request rule. Permission content matches the original basis. This comparison suggests no review; activity remains unobserved.");
+  return `${permissionDifference("request", original.requestedPermissions, current.requestedPermissions)}${permissionDifference("grant", original.grantedPermissions, current.grantedPermissions)}<p>${explanation}</p>`;
+}
+
 /** Render the selected comparison against the preserved original decision basis. */
 export function renderState(state: DemoState): void {
-  const current: Evidence = getEvidence(state.selectedEvidenceId);
+  const current: Evidence = evidenceForState(state, state.selectedEvidenceId);
   const affected: boolean = requiresReview(current);
   const latest: OutcomeRecord | undefined = state.outcomes.at(-1);
   const finalOutcome: boolean = latest !== undefined && latest.outcome !== "defer";
@@ -117,14 +152,12 @@ export function renderState(state: DemoState): void {
   setText("assumption-status", affected ? "Requested write access contradicts ASM-001" : "ASM-001 remains supported by this comparison");
   setMarkup("source-baseline", evidenceMarkup(getEvidence("EV-001")));
   setMarkup("source-current", evidenceMarkup(current));
-  setMarkup("evidence-diff", affected
-    ? `<div class="diff-row diff-added"><span class="diff-label">Added request</span><code>+ documents:write</code></div><p>Declared granted access stays <code>documents:read</code>. No runtime activity is observed. The new request warrants reassessment of the original approval; it does not prove a write capability was granted or used.</p>`
-    : `<div class="diff-row"><span class="diff-label">No relevant change</span><code>documents:read → documents:read</code></div><p>${current.id === "EV-003" ? "The control has a new capture/version label with the same permission content. " : "The selected version is the original evidence. "}No review is needed from this comparison.</p>`);
+  setMarkup("evidence-diff", comparisonMarkup(current));
   setMarkup("impact-path", `<ol class="impact-list" aria-label="Explore the evidence-to-review relationship">
-    <li class="impact-node"><details><summary data-testid="trace-source-toggle"><span>SRC-001 / ${current.id}</span><strong>${affected ? "Write access requested" : "Read-only request"}</strong></summary><p>${affected ? "The manifest adds a documents:write request. Declared granted access stays documents:read. Runtime activity is not observed." : "Permission content stays read-only. A new version label alone is not a relevant change under this rule."}</p></details></li>
+    <li class="impact-node"><details><summary data-testid="trace-source-toggle"><span>SRC-001 / ${current.id}</span><strong>${affected ? "Write access requested" : "Read-only request"}</strong></summary><p>Requested: ${escapeHtml(current.requestedPermissions.join(", "))}. Declared granted: ${escapeHtml(current.grantedPermissions.join(", "))}. Runtime activity is not observed. The trigger checks requested write access against ASM-001; changed grants need separate assessment.</p></details></li>
     <li class="impact-node"><details><summary data-testid="trace-assumption-toggle"><span>ASM-001</span><strong>${affected ? "Read-only assumption challenged" : "Read-only assumption supported"}</strong></summary><p>The original approval assumes requests remain read-only. ${affected ? "The new request contradicts that assumption; it does not prove write access was granted or used." : "This selected comparison does not contradict the assumption."}</p></details></li>
     <li class="impact-node"><details><summary data-testid="trace-decision-toggle"><span>DEC-001.1</span><strong>Original approval for summarization</strong></summary><p>${escapeHtml(ORIGINAL_DECISION.rationale)} This path describes the preserved original basis, even after a later human outcome.</p></details></li>
-    <li class="impact-node"><details><summary data-testid="trace-review-toggle"><span>REV-001 · Morgan Lee</span><strong>${state.review === null ? (affected ? "Review suggested; not opened" : "No review from this comparison") : (latest === undefined ? "Awaiting a human outcome" : outcomeLabel(latest.outcome))}</strong></summary><p>${state.review === null ? "Viewing this relationship records no outcome. When changed evidence warrants it, a person opens the assigned review and explains their decision." : "The opened review retains EV-001 and EV-002. A different selected comparison does not erase that review or any recorded outcome."}</p></details></li>
+    <li class="impact-node"><details><summary data-testid="trace-review-toggle"><span>REV-001 · Morgan Lee</span><strong>${state.review === null ? (affected ? "Review suggested; not opened" : "No review from this comparison") : (latest === undefined ? "Awaiting a human outcome" : outcomeLabel(latest.outcome))}</strong></summary><p>${state.review === null ? "Viewing this relationship records no outcome. When changed evidence warrants it, a person opens the assigned review and explains their decision." : `The opened review retains EV-001 and ${state.review.changed.id}. A different selected comparison does not erase that review or any recorded outcome. Return to its exact evidence version to record an outcome.`}</p></details></li>
   </ol>`);
   setText("review-id", state.review === null ? "Not opened" : `${state.review.id} · ${state.review.baseline.id} → ${state.review.changed.id}`);
   setText("review-status", state.review === null
@@ -135,10 +168,13 @@ export function renderState(state: DemoState): void {
   openButton.disabled = !affected || state.review !== null;
   openButton.hidden = state.review !== null;
   const form: HTMLElement = getElement("review-form");
-  form.hidden = !affected || state.review === null || finalOutcome;
+  form.hidden = state.review === null || state.selectedEvidenceId !== state.review.changed.id || finalOutcome;
   setMarkup("history", historyMarkup(state));
   getElement("load-changed").setAttribute("aria-pressed", String(current.id === "EV-002"));
   getElement("load-control").setAttribute("aria-pressed", String(current.id === "EV-003"));
+  getElement("load-authored").hidden = state.schemaVersion !== 2 || state.customEvidence === null;
+  getElement("load-authored").setAttribute("aria-pressed", String(current.id === "EV-004"));
+  renderVersionEntry(state);
   getElement("load-control").classList.toggle("primary", current.id === "EV-001");
   getElement("load-control").classList.toggle("secondary", current.id !== "EV-001");
   getElement("load-changed").classList.toggle("primary", current.id !== "EV-001");
@@ -160,7 +196,7 @@ export function showError(error: Error): void {
   setText("journey-description", "The session could not be validated. The error below explains what failed; local history has not been replaced.");
   getElement("journey-next").hidden = true;
   console.error("decision_continuity_error", { name: error.name, message: error.message });
-  for (const id of ["load-changed", "load-control", "open-review", "record-outcome"]) {
+  for (const id of ["load-changed", "load-control", "load-authored", "record-evidence", "open-review", "record-outcome"]) {
     const control: HTMLElement = getElement(id);
     if (!(control instanceof HTMLButtonElement)) throw new TypeError(`#${id} must be a button.`);
     control.disabled = true;

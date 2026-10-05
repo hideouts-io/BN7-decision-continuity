@@ -180,6 +180,22 @@ h1 span { color: var(--gold2); }
 .outcome-explanation { padding: 10px 12px; border-left: 2px solid rgba(241,200,107,.5); background: rgba(241,200,107,.045); color: var(--soft); font-size: 12px; line-height: 1.7; }
 .form-submit { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-top: 7px; }
 .form-submit p { max-width: 440px; color: var(--muted); font-size: 11px; }
+.version-entry { margin: 20px 0; padding: 24px; border-top: 2px solid rgba(241,200,107,.45); }
+.evidence-form { margin-top: 24px; }
+.evidence-form > .form-field:first-child { max-width: 420px; }
+.permission-inputs { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; margin-bottom: 20px; }
+.permission-inputs fieldset { min-width: 0; margin: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; }
+.permission-inputs legend { padding: 0 6px; color: var(--soft); font-size: 12px; font-weight: 700; }
+.permission-inputs label { display: flex; align-items: center; gap: 10px; min-height: 44px; color: var(--soft); font-family: ui-monospace,SFMono-Regular,Menlo,monospace; font-size: 12px; cursor: pointer; }
+.permission-inputs input { width: 18px; height: 18px; flex: 0 0 auto; accent-color: var(--gold); }
+.permission-inputs small { display: block; margin-top: 8px; color: var(--muted); font-size: 10px; line-height: 1.6; }
+@media (max-width: 700px) {
+  .version-entry { padding: 20px; }
+  .version-entry .card-heading { flex-wrap: wrap; }
+  .permission-inputs { grid-template-columns: 1fr; gap: 14px; }
+  .evidence-form .form-submit { flex-direction: column; align-items: stretch; gap: 16px; }
+  .evidence-form .form-field input, .evidence-form .form-field textarea { font-size: 16px; }
+}
 .history-card { padding: 25px; }
 .history-content { min-width: 0; color: var(--muted); font-size: 14px; }
 .history-content:focus-visible { outline: 2px solid var(--gold); outline-offset: 8px; }

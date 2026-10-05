@@ -2,13 +2,17 @@
 
 An application for preserving the evidence, assumptions, and dependencies behind decisions; identifying changes that warrant reassessment; and retaining accountable human review outcomes.
 
-This is the primary application repository: [hideouts-io/BN7-decision-continuity](https://github.com/hideouts-io/BN7-decision-continuity). Company research remains in [BN7](https://github.com/hideouts-io/BN7) and [bridgenode7-technical-review](https://github.com/hideouts-io/bridgenode7-technical-review). Linear is intended to track product work; code, research, and design should remain in their authoritative systems.
+This is the primary application repository: [hideouts-io/BN7-decision-continuity](https://github.com/hideouts-io/BN7-decision-continuity). Company research remains in [BN7](https://github.com/hideouts-io/BN7) and [bridgenode7-technical-review](https://github.com/hideouts-io/bridgenode7-technical-review). Linear tracks product work; code, research, and design remain in their authoritative systems.
 
 ## Current state
 
-The synthetic workflow, reviewer kit, and repeatable local sessions are implemented. A state-aware next-step card, clickable workflow navigation, expandable evidence relationships, and outcome explanations guide the local demonstration. **New session** preserves earlier records; **Demo session** resumes a selected workflow. Exports include session identity and export time. Strict TypeScript/build and real-browser checks passed. The milestone is saved locally on `codex/decision-continuity`; it has not been pushed. No reviewers have been contacted, interviewed, or secured; no production deployment or live source connector exists.
+The guided synthetic workflow, reviewer kit, and isolated local sessions are implemented. **Enter a version** creates an explicit v2 session for one manually entered synthetic manifest; **New session** retains the preset v1 walkthrough. Requested permissions, declared grants, UTC capture time, and a source note flow into comparison, human review, retained history, and JSON export. No existing session is migrated or reset.
+
+Strict TypeScript/build and complete real-browser checks passed. Source development is tracked on [codex/decision-continuity](https://github.com/hideouts-io/BN7-decision-continuity/tree/codex/decision-continuity), following the initial synthetic demonstration checkpoint `f323a4e`. [HID-5](https://linear.app/hideouts-bn7/issue/HID-5/record-a-synthetic-evidence-version-through-a-traceable-human-outcome) tracks the manual-evidence milestone. No reviewers have been contacted, interviewed, or secured; no production deployment or live source connector exists.
 
 Use public or synthetic evidence for the first prototype. A synthetic walkthrough can test comprehension and usefulness; demand and operational impact still require evidence from reviewers doing real work.
+
+Facilitated critique preparation is implemented and locally verified for [HID-7](https://linear.app/hideouts-bn7/issue/HID-7/prepare-and-rehearse-a-neutral-practitioner-critique-packet): a local command produces neutral source cards, fixture JSON, a blank observation worksheet and a preparation manifest. Its final Linear update was blocked by a disconnected connector; last verified status remains In Progress. This prepares a session; it records no practitioner participation or validation. Figma layout acceptance remains open in HID-6.
 
 ## Run locally
 
@@ -28,6 +32,19 @@ npm run smoke
 
 The build includes strict TypeScript checking. Smoke checks start their own server on port 5189 and use an isolated headless **Google Chrome** installation, Playwright, and axe. Chrome must be installed; tests do not use your signed-in Chrome profile. See [verification.md](docs/verification.md) for results and limits. For a local preview of the built files, run `npm run preview` and open `http://127.0.0.1:4173`.
 
+## Prepare a critique packet
+
+Choose a new directory outside this public checkout. Its parent must already exist. For example:
+
+```sh
+mkdir -p /Users/macbookpro/Documents/Decision-Continuity-Validation
+npm run prepare:critique -- --output-dir /Users/macbookpro/Documents/Decision-Continuity-Validation/participant-P01
+```
+
+The command creates `source-cards.html` (open in a browser or print), `sources.json`, blank `observations.md`, and `manifest.json`. The packet directory and files use owner-only permissions. Existing destinations are rejected without replacement; choose a new name for another preparation. Paths inside the checkout, including paths reached through a symlink, are rejected. No network access, account credentials, app session writes, or new dependency is required.
+
+The manifest records preparation time and source/artifact SHA-256 hashes. It describes the blank snapshot, not a secure audit record. Completing the worksheet changes its hash normally; the manifest does not authenticate consent or subsequent notes. Keep completed observations and session exports private. Follow the [reviewer kit](docs/reviewer-kit.md) for task selection, neutral questions and the continuation gate.
+
 ## Walk through the demonstration
 
 Select **New session** before each rehearsal or participant. It opens a clean synthetic workflow with its own UUID; **Existing demo** retains the history prepared before session support was added. No records are reset or deleted.
@@ -39,6 +56,19 @@ Select **New session** before each rehearsal or participant. It opens a clean sy
 5. Choose an outcome; its explanation describes what that action records without choosing it for you. Write a rationale and describe the resulting decision scope or next step. Both narrative fields require at least 16 characters after trimming. Select **Record human outcome**.
 6. Inspect history, then reload. The original approval remains; the outcome includes actor, time, rationale, and both evidence snapshots. A **deferred** outcome leaves review open for a later appended outcome. A terminal outcome cannot be overwritten in this demonstration.
 7. Select **Export history** to download the synthetic session as JSON. Selecting another comparison preserves earlier review history.
+
+## Enter another synthetic version
+
+1. Select **Enter a version**. It creates a distinct v2 session and opens Evidence; the original approval and older sessions remain intact.
+2. Enter a synthetic capture time in UTC, at or after EV-001's capture and at or before recording time. Select at least one requested permission and at least one declared grant independently. Neither category is preselected.
+3. Write a synthetic source note of 16–1,000 characters after trimming. For a rehearsal, request read/write, declare read-only grants, and describe the fictional manifest and lack of runtime evidence. Use public or synthetic material only.
+4. Select **Record & compare version**. EV-004 and its source note are immutable within this session. Comparison shows additions/removals in both categories; runtime activity remains **Not observed**. Capture creates no review or decision outcome automatically.
+5. Follow the impact path and open the assigned review when the request contradicts ASM-001. Record an outcome as in the preset walkthrough. The review is permanently bound to its exact source version; selecting EV-002 while reviewing EV-004 hides the outcome form. **Load entered version** resumes the correct comparison.
+6. Inspect history, reload, and export. The original decision, capture note, snapshots, human rationale, and explicit source-event references remain available. Deferral permits a later appended final outcome; a final outcome cannot be overwritten.
+
+One authored version and one review per session keep this prototype bounded. Capture closes after a version is saved or any review opens. To try different evidence, select **Enter a version** again rather than edit earlier records. EV-004 is identified together with its session UUID; it is not a globally unique source identifier.
+
+A grant-only change is visible but does not satisfy the request-based ASM-001 trigger. The interface explicitly identifies this coverage limit; absence of a suggested review does not establish that an approval is safe. There is no generic document parser, automatic source observation, own-decision creation, authenticated assignee, or live integration.
 
 To verify session isolation, record an outcome, select **New session**, then use **Demo session** to return to the earlier session. Its evidence and outcome remain intact after reload. The selected UUID appears in `?session=...`; copying that URL selects data in this browser profile and origin only. An absent session fails explicitly instead of creating an empty replacement. It does not provide a remote sharing link.
 
@@ -52,18 +82,19 @@ Exports include `exportSchemaVersion`, `sessionId`, and `exportedAt`, with the f
 
 The rule is deliberately narrow: SRC-001 supports ASM-001, which supports the original approval. Requested write access contradicts the read-request assumption. Version labels and timestamps alone do not trigger review. A person records the outcome; the app does not grant access or change a real assistant.
 
-The original demo remains under `bn7-decision-continuity-demo-v1` in local storage. New records use `bn7-decision-continuity-demo-v1:session:<UUID>`. `src/sessions.ts` validates URL identifiers, lists records, and creates a session only under an unused key. Controllers read/write the selected key; no migration or deletion is performed. Every outcome retains its evidence snapshots. Validation rejects selected evidence without source lineage, a review before its changed source selection, and outcomes before their review or prior outcome. Invalid/incompatible data produces an explicit error; history is not silently reset.
+The original demo remains under `bn7-decision-continuity-demo-v1`. Both session types use `bn7-decision-continuity-demo-v1:session:<UUID>`; their `schemaVersion` discriminates v1 preset records and v2 version-entry records. `src/legacy-state.ts` preserves the original v1 schema/validators. No implicit migration or write occurs on load. `src/sessions.ts` creates new records only under unused keys and validates URLs; missing or corrupt records fail explicitly without replacement.
+
+V2 stores one authored snapshot plus its original source event. Reviews/outcomes reference exact source events and retain evidence copies, so equal-millisecond actions remain unambiguous. Runtime validation checks immutable snapshot consistency, required attribution, chronology, unique event IDs, exact review targets, and terminal outcome protection. Browser storage is still editable; these checks are consistency checks, not tamper resistance.
 
 Storage belongs to the exact browser profile and origin, including the port. It is editable, can be cleared by the user/browser, is not a secure audit log, and is not synchronized or authenticated. Development and built-preview ports have separate storage. Enter public or synthetic material only.
 
-For a fresh participant, select **New session**. The selector lets a facilitator resume earlier synthetic histories, so use a separate profile/private context if participants should not see those records. Keep real identities and facilitator notes outside the app and public repository. There is no reset/delete button, import, authenticated identity, or automatic deletion.
+For a fresh participant, select **New session** for the preset rehearsal or **Enter a version** for capture critique. The selector lets a facilitator resume earlier synthetic histories, so use a separate profile/private context if participants should not see those records. Keep real identities and facilitator notes outside the app and public repository. There is no reset/delete button, import, authenticated identity, or automatic deletion.
 
-Native HTML and TypeScript with [Vite](https://vite.dev/guide/) provide preview/build; [Zod](https://zod.dev/) validates records and inputs. Session isolation reuses these dependencies and browser storage; a database/shared workspace would introduce hosting and identity requirements before the critique workflow has been tested. Pure scenario/state functions live in `src/scenario.ts` and `src/model.ts`; `src/journey.ts` derives navigation, status, and outcome explanations from validated state. Storage and UI effects remain in `src/storage.ts`, `src/main.ts`, and `src/render.ts`. Rendered narrative strings are escaped. No storage schema, source fixture, dependency, or decision rule changed for the guidance milestone. Production authentication, shared persistence, concurrent writes within one session, connectors, and secure auditing remain later decisions.
+Native HTML and TypeScript with [Vite](https://vite.dev/guide/) provide preview/build; [Zod](https://zod.dev/) validates records and inputs. Session isolation reuses these dependencies and browser storage; a database/shared workspace would introduce hosting and identity requirements before the critique workflow has been tested. Pure scenario/state functions live in `src/scenario.ts` and `src/model.ts`; `src/journey.ts` derives navigation, status, and outcome explanations from validated state. Storage and UI effects remain in `src/storage.ts`, `src/main.ts`, and `src/render.ts`. Rendered narrative strings are escaped. The v2 schema adds authored evidence and explicit source-event references; v1 fixtures and validators remain unchanged. No dependency or decision trigger was added. Production authentication, shared persistence, concurrent writes within one session, connectors, and secure auditing remain later decisions.
 
-The implemented milestone provides a guided, repeatable local demonstration with explicit next actions and preserved history. Its navigation and record behavior are technically verified; whether the introductions improve practitioner comprehension remains an untested hypothesis. Further expansion requires the reviewer kit's provisional gate: two of three suitable practitioners can explain the trace/history and permission limits without help, and at least one describes recurring reassessment pain and a feasible real-work trial. Simplify or change direction when their process indicates duplication or excess maintenance.
+The implemented increment tests a hypothesis: an assessor can capture attributable evidence and carry it into an understandable reassessment without excessive maintenance work. Its record behavior is technically verified; practitioner comprehension and usefulness remain untested. Further expansion requires the [reviewer kit](docs/reviewer-kit.md) gate: two of three suitable practitioners explain trace/history and permission limits without help, and at least one describes recurring reassessment pain and a feasible real-work trial. Simplify or change direction when their process reveals duplication or excessive capture/link maintenance.
 
-See [tools-and-tracking.md](docs/tools-and-tracking.md) for verified plugin states and the single proposed Linear issue. No external work records were created.
-
+See [tools-and-tracking.md](docs/tools-and-tracking.md) for actual Linear and Figma records and access boundaries.
 ## Visual foundation and site integration
 
 Use [Bridge Node 7](https://bridgenode7.com/) as the visual reference. The user explicitly authorized copying its style. The local [homepage snapshot](design/reference/bridgenode7-home.html) preserves the original inline CSS, typography, orbital mark, and layout. [brand.css](design/brand.css) adapts its exact palette and selected primitives for the app.

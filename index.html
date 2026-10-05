@@ -35,6 +35,7 @@
           <select id="session-select" data-testid="session-select" aria-describedby="session-hint"></select>
         </div>
         <button id="new-session" data-testid="new-session" class="btn secondary compact" type="button">New session<span aria-hidden="true">＋</span></button>
+        <button id="new-version-session" data-testid="new-version-session" class="btn secondary compact" type="button">Enter a version<span aria-hidden="true">↗</span></button>
         <span id="session-id" data-testid="session-id" class="session-identity">Loading local synthetic session</span>
         <p id="session-hint" class="session-hint">A new session keeps earlier history. A session link selects a record stored in this browser; it does not share the record remotely.</p>
       </section>
@@ -98,8 +99,22 @@
         <div class="evidence-actions" role="group" aria-label="Choose a synthetic source version">
           <button id="load-control" data-testid="load-control" class="btn primary" type="button">Load unchanged control</button>
           <button id="load-changed" data-testid="load-changed" class="btn secondary" type="button"><span class="button-icon" aria-hidden="true">＋</span>Load write-access request</button>
+          <button id="load-authored" data-testid="load-authored" class="btn secondary" type="button" hidden>Load entered version · EV-004</button>
           <p>Start with the unchanged control, then load the write-access request.</p>
         </div>
+        <article id="version-entry" class="version-entry panel" aria-labelledby="version-heading" hidden>
+          <div class="card-heading"><div><span class="field-label">Manual synthetic capture · SRC-001</span><h3 id="version-heading">Give the comparison your own version.</h3></div><span id="version-status" data-testid="version-status" class="badge">No version recorded</span></div>
+          <p id="version-guidance" class="section-lede">Record one fictional Atlas manifest. Requested access and declared grants are independent; runtime activity remains unobserved. Use synthetic material only.</p>
+          <form id="evidence-form" data-testid="evidence-form" class="evidence-form" hidden>
+            <div class="form-field"><label for="capture-time">Synthetic capture time · UTC <span class="required-label">Required</span></label><input id="capture-time" data-testid="capture-time" name="capturedAt" type="datetime-local" required min="2026-09-28T15:00" aria-describedby="capture-hint" /><small id="capture-hint">At or after the original capture, before the time you record this version. The entered time is interpreted as UTC.</small></div>
+            <div class="permission-inputs">
+              <fieldset aria-describedby="request-hint"><legend>Requested access</legend><label><input id="request-read" data-testid="request-read" type="checkbox" value="documents:read" />documents:read</label><label><input id="request-write" data-testid="request-write" type="checkbox" value="documents:write" />documents:write</label><small id="request-hint">Select at least one permission the manifest requests.</small></fieldset>
+              <fieldset aria-describedby="grant-hint"><legend>Declared granted access</legend><label><input id="grant-read" data-testid="grant-read" type="checkbox" value="documents:read" />documents:read</label><label><input id="grant-write" data-testid="grant-write" type="checkbox" value="documents:write" />documents:write</label><small id="grant-hint">Select at least one declared grant. This is not a live system check.</small></fieldset>
+            </div>
+            <div class="form-field"><label for="source-note">Synthetic source note <span class="required-label">Required</span></label><textarea id="source-note" data-testid="source-note" name="sourceNote" rows="3" required minlength="16" maxlength="1000" aria-describedby="source-note-hint" placeholder="Describe the fictional source and what this capture establishes or leaves uncertain."></textarea><small id="source-note-hint">16–1,000 characters. Stored with the evidence snapshot, history, and export. Do not enter personal or confidential material.</small></div>
+            <div class="form-submit"><p>EV-004 is immutable once saved. This session supports one entered version and one review. Start another version session to try different evidence.</p><button id="record-evidence" data-testid="record-evidence" class="btn primary" type="submit">Record &amp; compare version<span aria-hidden="true">↗</span></button></div>
+          </form>
+        </article>
         <details class="permission-guide"><summary data-testid="permission-guide-summary">How to read requested, granted, and observed access</summary><dl><div><dt>Requested</dt><dd>What the manifest asks to access.</dd></div><div><dt>Declared granted</dt><dd>What this synthetic source says was granted; no live system has been queried.</dd></div><div><dt>Observed</dt><dd>Activity supported by runtime evidence. This case has no observed activity; that does not prove activity never occurred.</dd></div></dl></details>
 
         <div class="evidence-grid">

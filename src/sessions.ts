@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { initialState } from "./model.ts";
+import { initialState, initialVersionState } from "./model.ts";
 import type { DemoState } from "./model.ts";
 import { STORAGE_KEY, readState, writeState } from "./storage.ts";
 
@@ -52,6 +52,16 @@ export function createSession(storage: Storage, id: string): DemoSession {
     throw new RangeError(`Session ${session.id} already exists. Existing history cannot be replaced by a new session.`);
   }
   writeState(storage, session.storageKey, initialState());
+  return session;
+}
+
+/** Create an opt-in v2 authoring session without rewriting any v1 record. */
+export function createVersionSession(storage: Storage, id: string): DemoSession {
+  const session: DemoSession = sessionForId(z.uuid().parse(id));
+  if (storage.getItem(session.storageKey) !== null) {
+    throw new RangeError(`Session ${session.id} already exists. Existing history cannot be replaced by a new session.`);
+  }
+  writeState(storage, session.storageKey, initialVersionState());
   return session;
 }
 

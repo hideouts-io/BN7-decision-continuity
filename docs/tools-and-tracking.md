@@ -1,47 +1,24 @@
-# Tools and Linear tracking
+# Tools and product tracking
 
-Read-only connection snapshot checked October 5, 2026. No plugins were installed, permissions changed, or external records created.
-
-The guided synthetic evidence-to-review workflow, reviewer kit, and repeatable isolated sessions are implemented locally. State-aware next actions, expandable evidence relationships, and outcome explanations are derived from existing records; earlier demo history remains preserved. See the [README](../README.md) for implementation and run directions, and the [reviewer kit](reviewer-kit.md) for the protocol and unsent invitation. Practitioner usability, demand, and operational impact remain unvalidated.
+Connection and execution snapshot verified October 5, 2026. Linear records and a Figma draft were created under the user's explicit authorization. The user authorized committing and pushing the application branch. No plugins were installed, permissions expanded, invitations sent, designs publicly published, or deployments made.
 
 | Tool | Verified state | Contribution and access |
 | --- | --- | --- |
-| GitHub | Installed; connector reads public `hideouts-io/BN7-decision-continuity`. Repository remains empty remotely. | Authoritative source home when publication is requested. Metadata/read access suffices now; no connector writes are needed for local implementation. |
-| Linear | Installed and readable; workspace/team **Hideouts-BN7**. No active projects or suitable product issue; only onboarding HID-1 through HID-4, all Todo. | Read existing work and prepare the issue below. External project/issue creation requires requested write access. |
-| Figma | Discovered as available but uninstalled; account/file access unverified. | Defer. Useful for editable shared designs if feedback justifies them; the browser demo already provides interactive design. Future access should target the selected design file. |
-| Replit | Discovered as available but uninstalled; account/project access unverified. | Defer. Shared editing/previews may later help; this milestone runs locally. Selected-project and deployment access are separate. GitHub remains authoritative for code. |
+| Linear | Existing HID-5/HID-6 and HID-7 records are preserved. Fresh reads of the project and all three issues failed with `USER_NOT_LOGGED_IN`; plugin settings report Linear is not installed. HID-7's last verified status is In Progress, although local acceptance passed. | Development work register. Reinstall/reconnect Linear, then update the existing HID-7; do not create a replacement issue. It is not an integration inside the app. |
+| Figma | Authentication succeeds on the existing Starter plan with a View seat. Fresh metadata and screenshot requests for node `4:49` both failed because the authenticated account lacks edit access to the file. Earlier authoring succeeded, but known layout defects remain unverified. | Draft with incomplete visual acceptance. Give this authenticated account edit access to the existing file before resuming HID-6; no upgrade, permission change or additional file was attempted. |
+| GitHub | Public `hideouts-io/BN7-decision-continuity`; the Git origin is verified and the authorized source branch is `codex/decision-continuity`, following checkpoint `f323a4e`. | Authoritative source home. [Application branch](https://github.com/hideouts-io/BN7-decision-continuity/tree/codex/decision-continuity) holds the demonstration and critique tooling; publishing source does not establish a deployed application or practitioner validation. |
+| Local development tools | Project-local TypeScript, Vite, Zod, Playwright and axe; installed Chrome exercised. | Build, preview, typed/runtime validation, and isolated browser verification. No new dependency was needed. |
 
-GitHub metadata reports broad repository permissions; only reads were performed. App approval settings are not OAuth scope evidence. Linear's native GitHub selection cannot be verified through the exposed tools used here. GitHub plugin access does not establish that Linear's native integration includes the new repository; its earlier restriction was not expanded.
+Replit is not required for this increment and its account/project access was not exercised. Linear's native GitHub repository selection remains unverified through these tools; no restriction was changed or expanded to the application repository.
 
-These are development tools. No customer connector is implemented. A finished-app Linear connection needs evidence that reviewers require reassessment in their existing Linear queue. GitHub source monitoring similarly needs a validated repository-evidence workflow and appropriately scoped customer access.
+## Authoritative records
 
-No new plugin is required for this local milestone. Only GitHub and Linear read operations were used to verify this snapshot; no connector write permissions were exercised.
+- [Decision Continuity — First Pilot](https://linear.app/hideouts-bn7/project/decision-continuity-first-pilot-a65fd73de2a1) holds product work. Milestones separate **Manual evidence version → accountable outcome** from **Facilitated critique readiness**; neither establishes practitioner validation.
+- [HID-5 — Record a synthetic evidence version through a traceable human outcome](https://linear.app/hideouts-bn7/issue/HID-5/record-a-synthetic-evidence-version-through-a-traceable-human-outcome) holds scope, hypothesis, dependencies, acceptance and completion evidence. The application implementation is complete locally; demand is unvalidated.
+- [Figma draft — visual review pending](https://www.figma.com/design/cnzVxpQMQs7fg0fEA8RqRn?node-id=4-49) contains six desktop states and one mobile state. Earlier creation/editing and connection metadata were verified. Screenshots revealed overlap/clipping; current inspection is blocked because the authenticated Starter/View account lacks edit access to this file. The draft uses explicitly labeled Inter; the app retains system sans.
+- [HID-6 — Repair and visually verify the Figma draft](https://linear.app/hideouts-bn7/issue/HID-6/repair-and-visually-verify-the-manual-evidence-figma-draft) preserves exact nodes, known defects, and verification criteria. The draft is not an accepted specification or a screenshot of the app.
+- [HID-7 — Prepare and rehearse a neutral practitioner critique packet](https://linear.app/hideouts-bn7/issue/HID-7/prepare-and-rehearse-a-neutral-practitioner-critique-packet) tracks the local generator, blank private worksheet, provenance manifest, real-filesystem checks and synthetic browser rehearsal. Local acceptance passed; completion synchronization is pending reconnection, so its last verified status remains In Progress. Practitioner participation remains unconfirmed.
 
-## Proposed issue — not created
+Code/behavior and run directions remain in the [README](../README.md), test evidence in [verification.md](verification.md), and the practitioner protocol in [reviewer-kit.md](reviewer-kit.md). Existing company/research records remain in their own repositories; the BN7 business TODO is unchanged. There is no duplicate local product backlog.
 
-**Project:** Decision Continuity — First Pilot
-
-**Milestone:** Guided reviewer demonstration
-
-**Issue:** Make synthetic decision review understandable and traceable
-
-**State:** Implemented locally; this proposed issue has not been created externally.
-
-**Scope:** Explain each section's purpose and next action; derive workflow guidance from the selected comparison and recorded review; let a reviewer expand evidence → assumption → decision → review reasoning and understand outcome choices. Preserve existing session isolation, explicit local-link and causal validation, JSON exports, deferred/later outcomes, and the original decision basis. Navigation remains read-only. Practitioner critique, production infrastructure, export import, and private facilitator scoring are outside the implemented scope.
-
-**Dependencies:** Existing TypeScript/Vite/Zod application, validated synthetic state and local sessions, native HTML navigation/disclosure, local Node runtime, and real-browser checks. No new package or plugin is needed. Reviewer commitment, Figma/Replit connections, live integrations, authentication, and deployment are not dependencies.
-
-**Acceptance criteria:**
-
-- New session creates an isolated synthetic workflow without deleting, resetting, or overwriting existing sessions or legacy demo history.
-- The session selector resumes the selected stored workflow after reload; evidence, reviews, outcomes, and original versions remain isolated between sessions.
-- Session IDs identify records without participant identities. JSON exports and filenames include session identity and export time while retaining decision history.
-- Next-step guidance distinguishes original evidence, unchanged control, changed request, pending/deferred review, and recorded final outcome using validated records.
-- Fragment navigation and expandable relationship nodes move focus/reveal reasoning without selecting evidence, opening a review, or recording a decision.
-- Review guidance explains disabled or hidden actions; an unchanged comparison does not close a pending/deferred review or undo a final outcome. Outcome definitions never choose an outcome for the person.
-- Requested/granted/observed distinctions, rationale requirements, causal ordering, explicit invalid-record errors, and immutable original history remain intact.
-- Build, complete real-browser smoke, keyboard, narrow-screen, automated accessibility checks, and desktop/mobile visual inspection pass. Evidence and limits are recorded in [verification.md](verification.md).
-- The README and reviewer kit reflect the implemented walkthrough without adding a duplicate protocol or task register.
-- Completion establishes local demonstration behavior; practitioner comprehension and usefulness still require the reviewer kit's validation gate.
-
-When issue creation is requested, use this single issue and link authoritative repository documents after publication is authorized. Do not copy complete documents into Linear or create a parallel register. Split work only when separate ownership/dependencies make it useful.
+These tools support development, tracking and design. The finished application has no Linear, Figma, GitHub or other customer connector. A later connector requires practitioner evidence of a useful source/review workflow, scoped customer access and an integration-specific validation milestone. Authenticated development-tool access does not provide customer authorization or operating data.

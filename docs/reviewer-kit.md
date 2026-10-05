@@ -1,6 +1,6 @@
 # Decision Continuity reviewer kit
 
-**Prepared October 4, 2026. No reviewers have been contacted, interviewed, or secured.** This synthetic critique does not establish demand, customer results, assurance, or a relationship with any candidate.
+**Current October 5, 2026. No reviewers have been contacted, interviewed, or secured.** This synthetic critique does not establish demand, customer results, assurance, or a relationship with any candidate.
 
 ## Explain the product
 
@@ -15,12 +15,14 @@ The next-step card, highlighted workflow stage, permission guide, and expandable
 ## Prepare and preserve each session
 
 1. Follow the [README](../README.md) to run and rehearse the demonstration; read its storage limitations.
-2. Select **New session** before each participant or rehearsal. It creates a fresh synthetic workflow and preserves existing sessions. Use **Demo session** to resume one later; **Existing demo** retains the earlier workflow history. Session IDs contain no participant identity. There is no deletion or reset action.
+2. Select **New session** before each participant or rehearsal. It creates a fresh synthetic workflow and preserves existing sessions. Use **Demo session** to resume one later; **Existing demo** retains the earlier workflow history. Use **Enter a version** instead when critiquing manual source capture; it creates a separate v2 session without changing the preset workflow. Session IDs contain no participant identity. There is no deletion or reset action.
 3. After the tasks, select **Export history** and preserve that session's JSON privately. The session ID identifies the record; the export time and filename distinguish saved copies. It contains synthetic decision history, not interview feedback. Export import is not implemented; resume the local record through **Demo session**.
 4. Ask for a practitioner who has performed assessments or reassessments. Review the invitation below yourself; no contact or booking requests have been submitted.
 5. When someone agrees, explain the 20-minute format and ask permission for anonymized notes. Obtain separate consent for recording. Keep contact details, correspondence, raw feedback, and confidential examples outside this public repository.
 
 The `?session=UUID` URL selects a record in the same browser profile and origin. It does not share data with a reviewer, another browser, or another machine. After human agreement, run the critique using your local demonstration or screen sharing. Sessions improve repeatability and preserve rehearsal history; they do not establish practitioner demand, authentic reviewer identity, or operational impact. See the README for storage limitations.
+
+Prepare a fresh packet using the README command. `source-cards.html` is the participant handout; `observations.md` is a blank facilitator worksheet kept outside the public checkout. The HTML needs no server or connection when opened locally. `sources.json` and the preparation manifest retain the input fields and their source/hash context. Record each browser session UUID beside the applicable task and export filename. Do not fill participant, consent or scoring fields during automated rehearsal.
 
 ## Run a 20-minute critique
 
@@ -58,6 +60,16 @@ Read the quoted task; keep the setup and observations for yourself. The interfac
 
 **Observe:** Are rationale, actor, time, and evidence versions understandable? Is the original decision preserved? Deferring leaves the review open so a later outcome can be appended; a terminal outcome cannot be overwritten. Neither recording nor exporting changes a real assistant's permissions.
 
+## Optional manual-capture critique
+
+After a preset rehearsal, use a new version-entry session to replace task 2's preset load with the participant entering a fictional manifest. Use the README for controls and constraints. Ask: “Record this synthetic source version with enough context for another reviewer to interpret it. Explain what changed, which assumption is affected, and what remains unknown.” Supply the fictional fields separately from product interpretation; do not imply the outcome they should choose.
+
+The prepared handout supplies **Source A** for unchanged permission fields, **Source B** for a requested-write change with read-only declared grants, and **Source C** for a grant-only change. Those meanings are facilitator setup; the cards themselves show source fields without a recommended decision. Use B for the complete capture → review → outcome → history task. Use A or C in separate version-entry sessions when time permits: only one immutable entry is available per session, and neither case satisfies the current request-based review trigger. Ask what further assessment the grant-only case warrants. The visible application guidance still makes this a guided critique.
+
+Observe capture time, independent request/grant selection, usefulness of the required note, and whether the saved snapshot can be reconstructed in review/history/export. Record validation errors and assistance. If time is limited, schedule capture critique separately rather than rush the three tasks. A grant-only change can expose the narrow trigger's limits; ask what assessment would still be required.
+
+The increment's hypothesis is that explicit source capture improves reassessment continuity at an acceptable maintenance cost. Favor further expansion only when practitioners can reconstruct the basis and identify recurring work where capture/link maintenance would cost less than the confusion it resolves. Positive reactions to the form alone do not justify connectors or production infrastructure.
+
 ## Ask neutral follow-up questions
 
 - What did the change establish, and what needs additional evidence?
@@ -92,7 +104,7 @@ Real impact requires later observation of comparable work: initial capture, link
 Fit is a hypothesis; participation and availability remain unconfirmed. Ask for a working assessor rather than assume a founder will participate.
 
 - **Max Rizzuto, BABL AI — Audit & Assurance.** The [team page](https://babl.ai/who-we-are/) verifies this operational role. Its [continuous-assurance article](https://babl.ai/continuous-ai-assurance-still-starts-with-a-point-in-time/) connects ongoing evidence with foundational professional review. Ask what prior scoping information reassessment requires. Use [BABL's contact form](https://babl.ai/contact-us/) to request an appropriate assessor. Their existing review methods may already handle the problem.
-- **Tjaden Hess / an AI/ML assessment engineer, Trail of Bits.** The [practice page](https://trailofbits.com/services/ai-ml/) identifies Hess as Engineering Director, Machine Learning and describes assumption tracing and fix-review retesting. Ask whether the permission example is a useful review trigger. [Technical office hours](https://trailofbits.com/office-hours/?utm_campaign=ai-ml&utm_medium=service-page&utm_source=services) offers a free 60-minute engineer session with an AI/ML option. Acceptance and the named engineer are not guaranteed; reports and retesting already overlap.
+- **An AI/ML security or assurance engineer, Trail of Bits.** The current [AI/ML service page](https://trailofbits.com/services/software-assurance/ai-ml/) describes AI/ML assurance work and offers a complimentary one-hour technical office-hours session with an engineer. Ask whether the permission example is a useful review trigger. Acceptance and the assigned engineer are not guaranteed; existing assessment methods may already cover the problem.
 - **An operational evaluator, Eticas.ai.** Its [evaluation process](https://www.eticas.ai/what-we-do) describes monitoring, material-change reevaluation, and evaluation history. Ask about organizational context, ownership, and misleading evidence links. Use [general contact](https://www.eticas.ai/contact-us/) for routing. Its [about page](https://www.eticas.ai/about-us/) identifies founder/CEO Gemma Galdon-Clavell, but a named operational reviewer is unverified. Existing monitoring and history capabilities overlap substantially.
 
 Start with BABL for assurance-method critique or Trail of Bits for technical critique, then seek a contrasting practitioner. These are candidate routes, not BN7 partnerships.

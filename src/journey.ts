@@ -1,5 +1,6 @@
+import { evidenceForState } from "./model.ts";
 import type { DemoState } from "./model.ts";
-import { getEvidence, requiresReview } from "./scenario.ts";
+import { requiresReview } from "./scenario.ts";
 import type { Outcome } from "./scenario.ts";
 
 export type JourneyStage = "evidence" | "impact" | "review" | "history";
@@ -40,11 +41,12 @@ export function outcomeExplanation(outcome: Outcome | ""): string {
 
 /** Describe the next useful inspection from validated records, never from navigation or guessed completion. */
 export function journeyForState(state: DemoState): Journey {
-  const affected: boolean = requiresReview(getEvidence(state.selectedEvidenceId));
+  const evidence = evidenceForState(state, state.selectedEvidenceId);
+  const affected: boolean = requiresReview(evidence);
   const latest = state.outcomes.at(-1);
   const context: Pick<Journey, "evidenceStatus" | "impactStatus" | "reviewStatus" | "historyStatus"> = {
-    evidenceStatus: state.selectedEvidenceId === "EV-001" ? "Original selected" : (affected ? "Write request selected" : "Control selected"),
-    impactStatus: affected ? "Assumption challenged" : "Original basis supported",
+    evidenceStatus: state.selectedEvidenceId === "EV-001" ? "Original selected" : (state.selectedEvidenceId === "EV-004" ? "Entered version selected" : (affected ? "Write request selected" : "Control selected")),
+    impactStatus: affected ? "Assumption challenged" : "Request assumption supported",
     reviewStatus: latest !== undefined ? outcomeLabel(latest.outcome) : (state.review !== null ? "Awaiting your outcome" : (affected ? "Suggested; not opened" : "Not opened")),
     historyStatus: state.outcomes.length === 0 ? "Original preserved" : `${state.outcomes.length} human ${state.outcomes.length === 1 ? "outcome" : "outcomes"} preserved`,
   };
@@ -53,17 +55,17 @@ export function journeyForState(state: DemoState): Journey {
       ...context, stage: "history", status: "Human outcome recorded", title: "Your review has a traceable outcome.",
       description: "Inspect the original approval, reviewed evidence, and your reasoning together. Changing the selected comparison does not overwrite this outcome.",
       next: { label: "Inspect decision history", target: "decision-history" },
-      reviewGuidance: `${outcomeLabel(latest.outcome)} is recorded for EV-002. This demonstration keeps a final outcome intact; start a new session to rehearse another choice.`,
+      reviewGuidance: `${outcomeLabel(latest.outcome)} is recorded for ${latest.changed.id}. This demonstration keeps a final outcome intact; start a new session to rehearse another choice.`,
       reviewNext: { label: "Inspect the recorded outcome", target: "decision-history" },
     };
   }
   if (state.review !== null) {
-    if (!affected) {
+    if (state.selectedEvidenceId !== state.review.changed.id) {
       return {
-        ...context, stage: "evidence", status: "Review still open", title: "An unchanged comparison does not close an open review.",
-        description: "REV-001 concerns the write request in EV-002. Load that version again to continue the review; the selected control and earlier records remain preserved.",
+        ...context, stage: "evidence", status: "Review still open", title: "Return to the evidence retained by this review.",
+        description: `REV-001 concerns ${state.review.changed.id}. Load that exact version again to continue; another comparison cannot substitute for its retained evidence. Earlier records remain preserved.`,
         next: { label: "Return to reviewed evidence", target: "evidence" },
-        reviewGuidance: "The review of EV-002 is still open. The current comparison does not resolve it. Select the write-access request to resume the outcome form.",
+        reviewGuidance: `The review of ${state.review.changed.id} is still open. The current comparison does not resolve it. ${state.review.changed.id === "EV-004" ? "Load entered version" : "Load write-access request"} to resume the outcome form.`,
         reviewNext: { label: "Select the reviewed version", target: "evidence" },
       };
     }
@@ -83,8 +85,17 @@ export function journeyForState(state: DemoState): Journey {
       ...context, stage: "impact", status: "Review suggested", title: "A changed request affects the original approval.",
       description: "The added write request challenges the read-only assumption. Trace the explicit link before opening a review. A request does not establish granted access or runtime activity.",
       next: { label: "Explore the evidence link", target: "impact" },
-      reviewGuidance: "EV-002 adds a write request linked to the original approval. Inspect why it matters, then open the assigned review. Opening it records no decision outcome.",
+      reviewGuidance: `${evidence.id} adds a write request linked to the original approval. Inspect why it matters, then open the assigned review. Opening it records no decision outcome.`,
       reviewNext: { label: "Inspect why this is linked", target: "impact" },
+    };
+  }
+  if (state.selectedEvidenceId === "EV-004") {
+    return {
+      ...context, stage: "evidence", status: "Entered version compared", title: "Inspect the fields and the rule's limits.",
+      description: "This version does not request write access, so it does not contradict ASM-001. Inspect declared grants separately; this narrow request rule cannot assess all changes or establish safety.",
+      next: { label: "Inspect the evidence link", target: "impact" },
+      reviewGuidance: "No review is suggested by the request-assumption rule. Grant changes and other conditions need separate assessment. The original decision and this capture stay in history.",
+      reviewNext: { label: "Inspect the comparison", target: "evidence" },
     };
   }
   if (state.selectedEvidenceId === "EV-003") {
@@ -94,6 +105,15 @@ export function journeyForState(state: DemoState): Journey {
       next: { label: "Compare the changed request", target: "evidence" },
       reviewGuidance: "The selected permission content matches the original basis, so this narrow rule suggests no review. Choose the write-access example to explore the changed case.",
       reviewNext: { label: "Choose the changed comparison", target: "evidence" },
+    };
+  }
+  if (state.schemaVersion === 2 && state.customEvidence === null) {
+    return {
+      ...context, stage: "evidence", status: "Version entry session", title: "Record the evidence you want to compare.",
+      description: "Inspect the original approval, then enter one synthetic Atlas manifest with separate requested and declared-granted fields and a source note. Recording evidence does not open a review or change the decision.",
+      next: { label: "Enter a synthetic version", target: "evidence" },
+      reviewGuidance: "Record a synthetic version first to test its request against the linked assumption. A person must open any suggested review and decide the outcome.",
+      reviewNext: { label: "Enter source evidence", target: "evidence" },
     };
   }
   return {

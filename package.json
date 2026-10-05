@@ -10,6 +10,7 @@
     "build": "npm run check && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "smoke": "node scripts/smoke.ts",
+    "prepare:critique": "node scripts/prepare-critique.ts",
     "browser": "playwright-cli"
   },
   "dependencies": { "zod": "4.6.5" },
