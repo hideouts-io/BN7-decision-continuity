@@ -1,6 +1,6 @@
 # Decision Continuity reviewer kit
 
-**Current October 5, 2026. No reviewers have been contacted, interviewed, or secured.** This synthetic critique does not establish demand, customer results, assurance, or a relationship with any candidate.
+**Current October 6, 2026. No reviewers have been contacted, interviewed, or secured.** This synthetic critique does not establish demand, customer results, assurance, or a relationship with any candidate.
 
 ## Explain the product
 
@@ -16,7 +16,7 @@ The next-step card, highlighted workflow stage, permission guide, and expandable
 
 1. Follow the [README](../README.md) to run and rehearse the demonstration; read its storage limitations.
 2. Select **New session** before each participant or rehearsal. It creates a fresh synthetic workflow and preserves existing sessions. Use **Demo session** to resume one later; **Existing demo** retains the earlier workflow history. Use **Enter a version** instead when critiquing manual source capture; it creates a separate v2 session without changing the preset workflow. Session IDs contain no participant identity. There is no deletion or reset action.
-3. After the tasks, select **Export history** and preserve that session's JSON privately. The session ID identifies the record; the export time and filename distinguish saved copies. It contains synthetic decision history, not interview feedback. Export import is not implemented; resume the local record through **Demo session**.
+3. After the tasks, select **Export history** and preserve that session's JSON privately. The session ID identifies the record; the export time and filename distinguish saved copies. It contains synthetic decision history, not interview feedback. Resume the local record through **Demo session**, or use the README recovery instructions to inspect and explicitly restore its export in a fresh browser context without replacing existing history.
 4. Ask for a practitioner who has performed assessments or reassessments. Review the invitation below yourself; no contact or booking requests have been submitted.
 5. When someone agrees, explain the 20-minute format and ask permission for anonymized notes. Obtain separate consent for recording. Keep contact details, correspondence, raw feedback, and confidential examples outside this public repository.
 
@@ -70,6 +70,20 @@ Observe capture time, independent request/grant selection, usefulness of the req
 
 The increment's hypothesis is that explicit source capture improves reassessment continuity at an acceptable maintenance cost. Favor further expansion only when practitioners can reconstruct the basis and identify recurring work where capture/link maintenance would cost less than the confusion it resolves. Positive reactions to the form alone do not justify connectors or production infrastructure.
 
+## Optional decision-creation critique
+
+The **Your decisions** workspace allows a fictional approval and explanatory read-only request assumption to be created before capturing a later version. Follow its [single-review README workflow](../README.md#create-a-single-review-synthetic-decision) rather than duplicate form directions here. Ask whether someone can state a bounded approval, identify its evidence dependency, assign responsibility and reconstruct a later outcome. Observe setup time and rule/prose confusion as well as navigation. The existing prepared packet still describes Atlas; it is not a tested protocol for arbitrary decisions. Keep real participant observations blank until an actual session and retain old prepared packets as historical artifacts.
+
+Automated v3 creation, control comparisons and recovery verify technical readiness only. No practitioner participation, authenticated responsibility or net maintenance benefit has been established. Outreach and external critique remain deferred.
+
+For a future repeated-change critique, follow the [continuity README workflow](../README.md#reassess-a-decision-repeatedly). Ask which earlier basis applies to C after B was revised, and whether the person can distinguish prior scope from later knowledge. Observe whether explicitly maintaining the next request boundary adds useful clarity or excessive work. Measure human setup, capture/link maintenance and reassessment time only during an actual session; browser automation timings are not those measurements. Existing Atlas packets are not a prepared v4 protocol and must not be overwritten. Cross-source contradictions and full historical replay remain later capabilities; synthetic malformed-record rejection establishes neither.
+
+## Optional shared-source critique
+
+Follow the [shared-source README workflow](../README.md#trace-a-shared-source-across-three-decisions) in a new v5 rehearsal. Ask why the same write request affects the request decision, leaves the declared-grant rule without a relevant change, and leaves production applicability unresolved. Ask what each label does and does not establish. Observe whether inspecting the path reveals the actual field, scope, boundary and evidence references rather than encouraging a safety inference.
+
+Ask the person to reassess one decision and reconstruct its original basis and outcome, then explain why another decision and a pending review of earlier evidence are unchanged. Measure setup, navigation and capture/link maintenance only during an actual session. The current Atlas packet has not been regenerated into a v5 protocol; preserve it and keep observations blank until participation. Automated or simulated outcomes cannot fill participant fields, establish comprehension, or measure demand.
+
 ## Ask neutral follow-up questions
 
 - What did the change establish, and what needs additional evidence?
@@ -101,6 +115,8 @@ Real impact requires later observation of comparable work: initial capture, link
 
 ## Candidate reviewers and public routes
 
+Outreach and external critique are currently deferred by the user. These routes and the invitation below remain optional future preparation, not tasks to execute or conditions blocking bounded local development.
+
 Fit is a hypothesis; participation and availability remain unconfirmed. Ask for a working assessor rather than assume a founder will participate.
 
 - **Max Rizzuto, BABL AI — Audit & Assurance.** The [team page](https://babl.ai/who-we-are/) verifies this operational role. Its [continuous-assurance article](https://babl.ai/continuous-ai-assurance-still-starts-with-a-point-in-time/) connects ongoing evidence with foundational professional review. Ask what prior scoping information reassessment requires. Use [BABL's contact form](https://babl.ai/contact-us/) to request an appropriate assessor. Their existing review methods may already handle the problem.
@@ -128,7 +144,7 @@ Review your BN7 role wording before sending; visual-copy permission does not est
 
 ## Choose the next gate
 
-These provisional rules guide development, not market conclusions:
+External participation is deferred. These provisional rules guide a future practitioner-validation decision, not every local implementation milestone or market conclusions:
 
 - **Continue:** Two of the first three suitable practitioners explain trace/history and permission limits without facilitator help, including reasoning beyond control labels. At least one describes recurring pain and agrees to discuss a feasible real-work trial.
 - **Simplify:** The problem recurs but at least two need navigation help or identify duplicate capture work. Reduce steps and repeat critique before adding connectors.

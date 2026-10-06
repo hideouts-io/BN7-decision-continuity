@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { mkdtemp, readFile, rm, stat, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import type { BrowserContext, Page } from "playwright";
 import { z } from "zod";
@@ -94,6 +94,16 @@ export async function checkCritiquePreparation(context: BrowserContext): Promise
     page.on("pageerror", (error: Error): void => { errors.push(error); });
     try {
       await packetRehearsal(page, packet);
+      await page.goto(pathToFileURL(join(output, "source-cards.html")).href);
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      assert.equal(await page.evaluate((): boolean => document.documentElement.scrollWidth <= innerWidth), true);
+      await page.screenshot({ path: "output/playwright/critique-cards-desktop.png", fullPage: true });
+      await page.setViewportSize({ width: 375, height: 812 });
+      assert.equal(await page.evaluate((): boolean => document.documentElement.scrollWidth <= innerWidth), true);
+      await page.screenshot({ path: "output/playwright/critique-cards-mobile.png" });
+      await page.getByTestId("source-B").screenshot({ path: "output/playwright/critique-source-mobile.png" });
+      await page.emulateMedia({ media: "print" });
+      await page.getByTestId("source-B").screenshot({ path: "output/playwright/critique-card-print.png" });
       assert.deepEqual(errors, []);
     } finally {
       await page.close();

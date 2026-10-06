@@ -6,6 +6,8 @@ import { parseArgs } from "node:util";
 import { z } from "zod";
 import { EvidenceInputSchema, ORIGINAL_DECISION, getEvidence } from "../src/scenario.ts";
 import type { FixtureEvidence } from "../src/scenario.ts";
+import { REFERENCE_DIRECTORY, readPublicReference } from "./public-reference.ts";
+import type { PublicReference } from "./public-reference.ts";
 
 const CritiqueCaseSchema = z.object({ id: z.enum(["A", "B", "C"]), input: EvidenceInputSchema });
 type CritiqueCase = z.infer<typeof CritiqueCaseSchema>;
@@ -39,7 +41,7 @@ function fixtureCase(id: "A" | "B", evidence: FixtureEvidence): CritiqueCase {
   return CritiqueCaseSchema.parse({ id, input: {
     capturedAt: evidence.capturedAt, requestedPermissions: evidence.requestedPermissions,
     grantedPermissions: evidence.grantedPermissions,
-    sourceNote: "Fictional Atlas manifest provided for a local critique. No operational system or runtime activity has been observed.",
+    sourceNote: "Fictional Atlas manifest inspired by the pinned MCP filesystem documentation in fixtures/public-reference/mcp-filesystem/manifest.json. Scenario dates and permission claims are invented; no operational activity has been observed.",
   } });
 }
 
@@ -50,7 +52,7 @@ function critiqueCases(): readonly CritiqueCase[] {
     CritiqueCaseSchema.parse({ id: "C", input: {
       capturedAt: getEvidence("EV-002").capturedAt,
       requestedPermissions: ["documents:read"], grantedPermissions: ["documents:read", "documents:write"],
-      sourceNote: "Fictional Atlas manifest with the source's declared permission fields. No live system or runtime evidence has been collected.",
+      sourceNote: "Fictional Atlas grant-only scenario inspired by the pinned MCP filesystem documentation in fixtures/public-reference/mcp-filesystem/manifest.json. Its permission claims and dates are invented; no runtime activity has been observed.",
     } }),
   ];
 }
@@ -66,7 +68,7 @@ function sourceCard(item: CritiqueCase): string {
     </dl></article>`;
 }
 
-function sourceCards(cases: readonly CritiqueCase[], brand: string): string {
+function sourceCards(cases: readonly CritiqueCase[], brand: string, reference: PublicReference): string {
   const original: FixtureEvidence = getEvidence("EV-001");
   return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
@@ -79,6 +81,7 @@ function sourceCards(cases: readonly CritiqueCase[], brand: string): string {
     @media print{@page{margin:16mm}body,html{background:white;color:black}.shell{padding:0;max-width:none}.panel{background:white;border:1px solid #666;box-shadow:none}h1,h2,p,dt{color:black}.panel:not(:last-child){break-after:page}.scope{border-color:#666}}
     </style></head><body><main class="shell"><p>Bridge Node 7 / Decision Continuity</p><h1>Synthetic source records</h1>
     <p class="scope">Fictional material for a guided critique. No operational observations, authenticated identities, or client information.</p>
+    <p>Public inspiration: <a href="${escapeHtml(reference.url)}">MCP filesystem documentation</a>, commit <code>${reference.commit}</code>; ${escapeHtml(reference.attribution)}. ${escapeHtml(reference.license)} Captured ${reference.capturedAt}. Documentation distinguishes tool capabilities; Atlas permission requests, grants, actors, outcomes and dates are invented. Nothing was installed or executed.</p>
     <section class="panel" aria-labelledby="basis-title"><h2 id="basis-title">Original approval basis</h2><p>${escapeHtml(ORIGINAL_DECISION.statement)}</p><dl>
     <div><dt>Decision revision</dt><dd>${ORIGINAL_DECISION.revision}</dd></div><div><dt>Original evidence</dt><dd>${original.id} · ${original.sourceId}</dd></div>
     <div><dt>Capture · UTC</dt><dd><code>${original.capturedAt}</code></dd></div><div><dt>Requested permissions</dt><dd><code>${original.requestedPermissions.join(", ")}</code></dd></div>
@@ -133,12 +136,13 @@ The packet manifest hashes the blank preparation snapshot. Filling this workshee
 /** Write a new owner-only packet; an existing directory or file fails without replacement. */
 async function preparePacket(repository: string, output: string): Promise<void> {
   const cases: readonly CritiqueCase[] = critiqueCases();
-  const sourceFiles: readonly string[] = ["src/scenario.ts", "scripts/prepare-critique.ts", "design/brand.css", "docs/reviewer-kit.md"];
+  const reference: PublicReference = await readPublicReference(repository);
+  const sourceFiles: readonly string[] = ["src/scenario.ts", "scripts/prepare-critique.ts", "scripts/public-reference.ts", "design/brand.css", "docs/reviewer-kit.md", `${REFERENCE_DIRECTORY}/manifest.json`, ...reference.artifacts.map((artifact): string => `${REFERENCE_DIRECTORY}/${artifact.name}`)];
   const sources = await Promise.all(sourceFiles.map(async (path: string): Promise<{ path: string; sha256: string }> => ({ path, sha256: hash(await readFile(join(repository, path), "utf8")) })));
   const artifacts: readonly Artifact[] = [
-    { name: "source-cards.html", content: sourceCards(cases, await readFile(join(repository, "design/brand.css"), "utf8")) },
+    { name: "source-cards.html", content: sourceCards(cases, await readFile(join(repository, "design/brand.css"), "utf8"), reference) },
     { name: "observations.md", content: observationWorksheet(repository) },
-    { name: "sources.json", content: JSON.stringify({ packetSchemaVersion: 1, originalDecision: ORIGINAL_DECISION, originalEvidence: getEvidence("EV-001"), cases }, null, 2) + "\n" },
+    { name: "sources.json", content: JSON.stringify({ packetSchemaVersion: 1, publicReference: reference, originalDecision: ORIGINAL_DECISION, originalEvidence: getEvidence("EV-001"), cases }, null, 2) + "\n" },
   ];
   await mkdir(output, { mode: 0o700 });
   for (const artifact of artifacts) await writeFile(join(output, artifact.name), artifact.content, { flag: "wx", mode: 0o600 });

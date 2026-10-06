@@ -20,6 +20,8 @@
           <span class="identity-text"><span class="brand-name">Bridge Node 7</span><span class="product-name">Decision Continuity</span></span>
         </a>
         <nav class="header-nav" aria-label="Workspace sections">
+          <a href="/decisions.html" data-testid="your-decisions">Your decisions</a>
+          <a href="/impact.html" data-testid="shared-impact">Shared impact</a>
           <a href="#evidence">Evidence</a>
           <a href="#review">Review</a>
           <a href="#decision-history">History</a>
@@ -39,6 +41,21 @@
         <span id="session-id" data-testid="session-id" class="session-identity">Loading local synthetic session</span>
         <p id="session-hint" class="session-hint">A new session keeps earlier history. A session link selects a record stored in this browser; it does not share the record remotely.</p>
       </section>
+      <details class="recovery-panel panel" data-testid="import-panel">
+        <summary data-testid="import-toggle">Import history <span>Restore a saved synthetic session</span></summary>
+        <p id="import-hint">Choose an exported JSON file, inspect its summary, then confirm. Maximum 1 MiB. Files stay in this browser; nothing is uploaded. Existing history cannot be overwritten. A session link alone does not transfer data.</p>
+        <form id="import-form" data-testid="import-form">
+          <div class="form-field"><label for="import-file">History export</label><input id="import-file" data-testid="import-file" type="file" accept=".json,application/json" required aria-describedby="import-hint" /></div>
+          <button id="inspect-import" data-testid="inspect-import" class="btn secondary compact" type="submit">Inspect export</button>
+        </form>
+        <div id="import-error" data-testid="import-error" class="message error-message" role="alert" hidden></div>
+        <div id="import-preview" data-testid="import-preview" hidden>
+          <h2>Review before restoring</h2>
+          <p id="import-summary" data-testid="import-summary" class="recovery-summary" role="status" aria-live="polite"></p>
+          <p>Synthetic identities are not authenticated. Imported records are checked for consistency, not authenticity. Legacy “existing-demo” exports retain that identity and are rejected if different history already occupies it.</p>
+          <button id="confirm-import" data-testid="confirm-import" class="btn primary compact" type="button" disabled>Restore &amp; open session</button>
+        </div>
+      </details>
       <section class="intro" aria-labelledby="page-title">
         <div class="intro-copy">
           <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>Evidence → accountable decisions</p>

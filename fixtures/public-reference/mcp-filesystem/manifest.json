@@ -1,0 +1,28 @@
+{
+  "referenceSchemaVersion": 1,
+  "repository": "https://github.com/modelcontextprotocol/servers",
+  "commit": "5abed86c5317b833dd59907492d56c65981642aa",
+  "capturedAt": "2026-10-05T23:53:07.731Z",
+  "url": "https://github.com/modelcontextprotocol/servers/blob/5abed86c5317b833dd59907492d56c65981642aa/src/filesystem/README.md",
+  "attribution": "Model Context Protocol servers contributors",
+  "license": "Repository licensing transition: Apache-2.0 / CC-BY-4.0 / retained MIT; filesystem README states MIT. See captured upstream license notice.",
+  "artifacts": [
+    {
+      "name": "README.upstream.md",
+      "upstreamPath": "src/filesystem/README.md",
+      "url": "https://raw.githubusercontent.com/modelcontextprotocol/servers/5abed86c5317b833dd59907492d56c65981642aa/src/filesystem/README.md",
+      "sha256": "df276d57efc04b85fa1e8163fe1aa3d5b11d5b2a7de5ec51ba083e5cb04019cd"
+    },
+    {
+      "name": "LICENSE.upstream.txt",
+      "upstreamPath": "LICENSE",
+      "url": "https://raw.githubusercontent.com/modelcontextprotocol/servers/5abed86c5317b833dd59907492d56c65981642aa/LICENSE",
+      "sha256": "0382b0057770ca05e9c350a50aa3b1c1fea84da0bc81d723bf00b9aa841be58a"
+    }
+  ],
+  "publicFacts": [
+    "The documentation describes read tools and write-capable tools.",
+    "The documentation provides a Docker read-only mount example."
+  ],
+  "limitations": "Documentation snapshot only; no server was installed or executed. Tool annotations and examples do not establish actual requests, grants, or runtime behavior. Atlas permissions, decisions, actors and outcomes are fictional; scenario dates are invented, not dates of upstream changes."
+}

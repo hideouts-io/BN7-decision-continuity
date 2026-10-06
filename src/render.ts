@@ -6,7 +6,7 @@ import { journeyForState, outcomeExplanation, outcomeLabel } from "./journey.ts"
 import type { Journey, JourneyStage, NavigationAction } from "./journey.ts";
 
 /** Escape all dynamic strings before inserting them into the small HTML templates. */
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 

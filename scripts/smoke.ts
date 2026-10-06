@@ -14,6 +14,10 @@ import { ORIGINAL_DECISION, EvidenceSchema } from "../src/scenario.ts";
 import { STORAGE_KEY } from "../src/storage.ts";
 import { LEGACY_SESSION_ID, SessionIdSchema, sessionForId, sessionFromUrl } from "../src/sessions.ts";
 import { checkEvidenceVersionWorkflow } from "./version-smoke.ts";
+import { checkSessionRecovery } from "./recovery-smoke.ts";
+import { checkAuthoredDecisionWorkflow } from "./authored-smoke.ts";
+import { checkDecisionContinuity } from "./continuity-smoke.ts";
+import { checkSharedSource } from "./shared-smoke.ts";
 
 const url: string = "http://127.0.0.1:5189";
 const rationale: string = "The changed request contradicts the read-only assumption. Declared grants remain read-only and write activity is not observed.";
@@ -286,9 +290,13 @@ try {
     await checkSessions(workflow, completed);
     await checkEvidenceVersionWorkflow(workflow);
     await checkCritiquePreparation(workflow);
+    await checkSessionRecovery(browser);
+    await checkAuthoredDecisionWorkflow(browser);
+    await checkDecisionContinuity(browser);
+    await checkSharedSource(browser);
     await checkKeyboardAndMobile(keyboard);
     await checkInvalidStorage(invalid, completed);
-    console.log("decision_continuity_smoke_passed", { workflow: true, guidance: true, readOnlyNavigation: true, outcomeExplanations: true, sessions: true, legacyPreserved: true, keyboard: true, narrowScreen: true, accessibility: true, persistence: true, invalidStorage: true, critiquePreparation: true });
+    console.log("decision_continuity_smoke_passed", { workflow: true, guidance: true, readOnlyNavigation: true, outcomeExplanations: true, sessions: true, legacyPreserved: true, keyboard: true, narrowScreen: true, accessibility: true, persistence: true, invalidStorage: true, critiquePreparation: true, sessionRecovery: true, authoredDecisions: true, repeatedReassessment: true });
   } finally {
     await browser.close();
   }

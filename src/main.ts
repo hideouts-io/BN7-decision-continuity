@@ -1,12 +1,14 @@
 import { EvidenceInputSchema, ReviewInputSchema, openReview, recordEvidenceVersion, recordOutcome, selectEvidence } from "./model.ts";
 import type { DemoState } from "./model.ts";
-import { ORIGINAL_DECISION, OutcomeSchema, PermissionSchema, getEvidence } from "./scenario.ts";
+import { OutcomeSchema, PermissionSchema } from "./scenario.ts";
 import type { EvidenceId, Permission } from "./scenario.ts";
 import { announce, getElement, renderOutcomeExplanation, renderState, showError } from "./render.ts";
 import { writeState } from "./storage.ts";
 import { LEGACY_SESSION_ID, SESSION_STORAGE_PREFIX, SessionIdSchema, createSession, createVersionSession, listSessions, readSessionState, sessionFromUrl, urlForSession } from "./sessions.ts";
 import type { DemoSession } from "./sessions.ts";
 import { journeyForState } from "./journey.ts";
+import { historyExport } from "./recovery.ts";
+import { connectRecovery } from "./recovery-ui.ts";
 
 /** Commit local storage before displaying a successful action. */
 function persistAndRender(storage: Storage, session: DemoSession, state: DemoState, message: string): void {
@@ -96,11 +98,7 @@ function submitOutcome(storage: Storage, session: DemoSession, event: SubmitEven
 /** Export the local session with its fixed original basis; no network request is made. */
 function exportHistory(storage: Storage, session: DemoSession): void {
   const exportedAt: string = new Date().toISOString();
-  const content: string = JSON.stringify({
-    exportSchemaVersion: 1, sessionId: session.id, exportedAt,
-    demonstration: "Synthetic; actor identity is not authenticated; local storage is editable and is not an audit security boundary.",
-    originalDecision: ORIGINAL_DECISION, originalEvidence: getEvidence("EV-001"), session: readSessionState(storage, session),
-  }, null, 2);
+  const content: string = JSON.stringify(historyExport(session.id, readSessionState(storage, session), exportedAt), null, 2);
   const url: string = URL.createObjectURL(new Blob([content], { type: "application/json" }));
   const link: HTMLAnchorElement = document.createElement("a");
   link.href = url;
@@ -160,6 +158,7 @@ function explainOutcome(): void {
 }
 
 function startApplication(storage: Storage, session: DemoSession): void {
+  connectRecovery(storage);
   renderState(readSessionState(storage, session));
   renderSessions(storage, session);
   prepareEvidenceForm();
