@@ -17,7 +17,9 @@
       <nav class="header-nav" aria-label="Workspaces"><a href="./">Atlas walkthrough</a><a href="./decisions.html" aria-current="page">Your decisions</a></nav>
       <span class="environment-label"><span class="environment-dot" aria-hidden="true"></span>Local · synthetic only</span>
     </div></header>
-    <main id="main" class="shell authored-page" tabindex="-1">
+    <p id="app-loading" data-testid="app-loading" class="shell" role="status">Loading Decision Continuity…</p>
+    <noscript><p class="shell">Enable JavaScript to use this interactive demonstration.</p></noscript>
+    <main inert id="main" class="shell authored-page" tabindex="-1">
       <section class="session-bar" aria-label="Saved synthetic decisions">
         <div class="session-picker"><label for="authored-select">Saved decision</label><select id="authored-select" data-testid="authored-select"><option value="">Create a decision</option></select></div>
         <a id="authored-new" class="btn secondary compact" href="./decisions.html" data-testid="authored-new">New decision ＋</a>
@@ -37,7 +39,7 @@
         <form id="authored-create-form" data-testid="authored-create-form" class="authored-form">
           <div class="authored-grid">
             <div class="form-field"><label for="create-title">Decision title</label><input id="create-title" data-testid="create-title" required minlength="3" maxlength="120" placeholder="Fictional research assistant approval" /></div>
-            <div class="form-field"><label for="create-actor">Fictional reviewer code</label><input id="create-actor" data-testid="create-actor" required pattern="[A-Z][A-Z0-9_-]{1,31}" maxlength="32" placeholder="REVIEWER_A" aria-describedby="actor-hint" /><small id="actor-hint">Assigned for this rehearsal only. This code is not proof of identity or consent.</small></div>
+            <div class="form-field"><label for="create-actor">Fictional reviewer code</label><input id="create-actor" data-testid="create-actor" required pattern="[A-Z][A-Z0-9_\-]{1,31}" maxlength="32" placeholder="REVIEWER_A" aria-describedby="actor-hint" /><small id="actor-hint">Assigned for this rehearsal only. This code is not proof of identity or consent.</small></div>
           </div>
           <div class="form-field"><label for="create-statement">Original approval and scope</label><textarea id="create-statement" data-testid="create-statement" required minlength="16" maxlength="1000" rows="2" placeholder="Approve synthetic document summarization within a read-only scope."></textarea></div>
           <div class="form-field"><label for="create-rationale">Original rationale</label><textarea id="create-rationale" data-testid="create-rationale" required minlength="16" maxlength="2000" rows="2" placeholder="Explain why this scope is justified by the fictional baseline."></textarea></div>

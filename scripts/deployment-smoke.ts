@@ -27,8 +27,24 @@ try {
   const page = await context.newPage();
   const failures: string[] = [];
   page.on("pageerror", (error: Error): void => { failures.push(error.message); });
+  page.on("console", (message): void => { if (message.type() === "error") failures.push(message.text()); });
   page.on("response", (response): void => { if (response.status() >= 400) failures.push(`${response.status()} ${response.url()}`); });
+  await page.route("**/assets/*.js", async (route): Promise<void> => {
+    await new Promise<void>((resolve): void => { setTimeout(resolve, 800); });
+    await route.continue();
+  });
+  await page.goto(`${url}/decisions.html`, { waitUntil: "commit" });
+  await page.getByTestId("app-loading").waitFor();
+  assert.equal(await page.locator("#main").evaluate((element: HTMLElement): boolean => element.inert), true);
+  assert.equal(await page.getByTestId("create-actor").evaluate((element): boolean => { element.focus(); return document.activeElement === element; }), false);
+  await page.locator('html[data-app-ready="true"]').waitFor();
+  await page.getByTestId("create-actor").fill("REVIEWER_A");
+  assert.equal(await page.getByTestId("create-actor").evaluate((element: HTMLInputElement): boolean => element.checkValidity()), true);
+  await page.getByTestId("create-actor").fill("lowercase");
+  assert.equal(await page.getByTestId("create-actor").evaluate((element: HTMLInputElement): boolean => element.checkValidity()), false);
+  await page.unrouteAll({ behavior: "wait" });
   await page.goto(target.href);
+  await page.locator('html[data-app-ready="true"]').waitFor();
   assert.equal(await page.locator("h1").count(), 1);
   const resources: string[] = await page.locator('script[src], link[rel="stylesheet"], link[rel="icon"]').evaluateAll((elements): string[] => elements.map((element): string => new URL(element.getAttribute("src") ?? element.getAttribute("href") ?? "", document.baseURI).href));
   assert.ok(resources.length >= 3);

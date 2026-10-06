@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { appPath } from "./app-path.ts";
+import { finishApplicationLoading } from "./app-ready.ts";
 import { getElement } from "./render.ts";
 import { createSharedState, appendSharedEvidence, openSharedReview, appendSharedOutcome, EnvironmentSchema, sharedBasis, sharedDecision, sharedImpact, sharedPendingReview } from "./shared-model.ts";
 import type { SharedState } from "./shared-model.ts";
@@ -230,4 +231,6 @@ try {
   displayError(error);
   for (const control of document.querySelectorAll<HTMLInputElement | HTMLButtonElement | HTMLSelectElement | HTMLTextAreaElement>("input, button, select, textarea")) control.disabled = true;
   throw error;
+} finally {
+  finishApplicationLoading();
 }

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { appPath } from "./app-path.ts";
+import { finishApplicationLoading } from "./app-ready.ts";
 import { appendAuthoredEvidence, appendAuthoredOutcome, createAuthoredState, openAuthoredReview } from "./authored-model.ts";
 import type { AuthoredState } from "./authored-model.ts";
 import { listAuthoredIds, persistAuthoredState, readAuthoredState } from "./authored-storage.ts";
@@ -188,4 +189,6 @@ try {
   getElement("creation").hidden = true;
   getElement("authored-workspace").hidden = true;
   displayError(error);
+} finally {
+  finishApplicationLoading();
 }

@@ -27,6 +27,7 @@ async function accessible(page: Page): Promise<void> {
   assert.deepEqual(result.violations.map((violation): string => `${violation.id}: ${violation.nodes.map((node): string => node.target.join(" ")).join(", ")}`), []);
 }
 export async function fillCreation(page: Page, title: string): Promise<void> {
+  await page.locator('html[data-app-ready="true"]').waitFor();
   await page.getByTestId("create-title").fill(title);
   await page.getByTestId("create-actor").fill("REVIEWER_A");
   await page.getByTestId("create-statement").fill("Approve the fictional research assistant for read-only document summarization.");

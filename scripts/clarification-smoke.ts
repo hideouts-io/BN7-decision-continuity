@@ -58,11 +58,13 @@ export async function checkReviewClarification(browser: Browser, url: string): P
     await page.getByTestId("new-continuity").click(); await fillCreation(page, "Older v4 clarification guard");
     await page.getByTestId("authored-create").click(); await page.waitForURL((next: URL): boolean => next.searchParams.has("session"));
     await page.getByTestId("shared-impact").click();
+    await page.locator('html[data-app-ready="true"]').waitFor();
     await page.getByTestId("shared-actor").fill("SIM_REVIEWER"); await page.getByTestId("shared-synthetic").check(); await page.getByTestId("shared-create").click();
     await page.waitForURL((next: URL): boolean => next.searchParams.has("session"));
     const oldExport = await download(page), older = await bytes(page); assert.equal(Object.keys(older).length, 5);
     await page.getByTestId("clarification-workspace").click(); assert.deepEqual(await bytes(page), older);
     await accessible(page);
+    await page.locator('html[data-app-ready="true"]').waitFor();
     await page.getByTestId("shared-actor").fill("SIM_REVIEWER"); await page.getByTestId("shared-synthetic").check(); await page.getByTestId("shared-create").click();
     await page.waitForURL((next: URL): boolean => next.searchParams.has("session"));
     const initial = await saved(page), production = initial.originalDecisions[2]; assert.ok(production !== undefined);

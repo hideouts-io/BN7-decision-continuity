@@ -9,6 +9,7 @@ import type { DemoSession } from "./sessions.ts";
 import { journeyForState } from "./journey.ts";
 import { historyExport } from "./recovery.ts";
 import { connectRecovery } from "./recovery-ui.ts";
+import { finishApplicationLoading } from "./app-ready.ts";
 
 /** Commit local storage before displaying a successful action. */
 function persistAndRender(storage: Storage, session: DemoSession, state: DemoState, message: string): void {
@@ -199,4 +200,8 @@ window.addEventListener("error", (event: ErrorEvent): void => {
   showError(event.error);
 });
 
-startApplication(window.localStorage, sessionFromUrl(new URL(window.location.href)));
+try {
+  startApplication(window.localStorage, sessionFromUrl(new URL(window.location.href)));
+} finally {
+  finishApplicationLoading();
+}

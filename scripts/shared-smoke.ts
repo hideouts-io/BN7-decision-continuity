@@ -69,6 +69,7 @@ export async function checkSharedSource(browser: Browser, url: string): Promise<
     const older = await bytes(page); assert.equal(Object.keys(older).length, 4);
     await page.getByTestId("shared-impact").click();
     assert.deepEqual(await bytes(page), older, "Opening v5 cannot fabricate a rehearsal or migrate earlier records.");
+    await page.locator('html[data-app-ready="true"]').waitFor();
     await page.getByTestId("shared-actor").fill("SIM_REVIEWER"); await page.getByTestId("shared-synthetic").check();
     await accessible(page); await page.getByTestId("shared-create").focus(); await page.keyboard.press("Enter");
     await page.waitForURL((next: URL): boolean => next.searchParams.has("session"));
@@ -163,6 +164,7 @@ export async function checkSharedSource(browser: Browser, url: string): Promise<
     for (const [key, value] of Object.entries(older)) assert.equal((await bytes(page))[key], value, "Every older-format byte must be preserved.");
     await accessible(page); assert.deepEqual(errors, []);
     await page.getByTestId("shared-new").click();
+    await page.locator('html[data-app-ready="true"]').waitFor();
     await page.getByTestId("shared-actor").fill("CONTROL_REVIEWER"); await page.getByTestId("shared-synthetic").check();
     await page.getByTestId("shared-create").click(); await page.waitForURL((next: URL): boolean => next.searchParams.has("session"));
     await capture(page, ["read", "write"], ["read"], "Unknown");
