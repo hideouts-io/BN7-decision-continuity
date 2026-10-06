@@ -2,6 +2,7 @@ import { getElement } from "./render.ts";
 import { MAX_IMPORT_BYTES, parseHistoryExport, recoverHistory, recoveryDestination } from "./recovery.ts";
 import type { HistoryExport } from "./recovery.ts";
 import { urlForSession } from "./sessions.ts";
+import { appPath } from "./app-path.ts";
 
 function importError(error: Error): void {
   const message: HTMLElement = getElement("import-error");
@@ -43,9 +44,9 @@ export function connectRecovery(storage: Storage): void {
       const exists: boolean = storage.getItem(destination.storageKey) !== null;
       getElement("import-summary").textContent = [
         `Session: ${record.sessionId}. Format: export v${record.exportSchemaVersion} / session v${record.session.schemaVersion}.`,
-        `Exported: ${record.exportedAt}. Original: ${record.exportSchemaVersion === 4 ? record.originalDecisions.map((item): string => item.decision.revision).join(", ") : record.originalDecision.revision}.`,
-        `${record.session.sources.length} source events; ${record.exportSchemaVersion === 3 || record.exportSchemaVersion === 4 ? `${record.session.reviews.length} reviews` : record.session.review === null ? "no review" : "one review"}; ${record.session.outcomes.length} outcomes.`,
-        `Latest outcome: ${record.session.outcomes.at(-1)?.outcome ?? "none"}.`,
+        `Exported: ${record.exportedAt}. Original: ${(record.exportSchemaVersion === 4 || record.exportSchemaVersion === 5) ? record.originalDecisions.map((item): string => item.decision.revision).join(", ") : record.originalDecision.revision}.`,
+        `${record.session.sources.length} source events; ${record.exportSchemaVersion === 3 || (record.exportSchemaVersion === 4 || record.exportSchemaVersion === 5) ? `${record.session.reviews.length} reviews` : record.session.review === null ? "no review" : "one review"}; ${record.session.outcomes.length} outcomes.`,
+        `${record.exportSchemaVersion === 5 ? `${record.session.replacements.length} explicit review replacements. ` : ""}Latest outcome: ${record.session.outcomes.at(-1)?.outcome ?? "none"}.`,
         exists ? "Identical history already exists. Confirmation opens it without rewriting storage." : "Confirmation restores this history locally. Existing sessions remain intact.",
       ].join("\n");
       pending = record;
@@ -66,8 +67,9 @@ export function connectRecovery(storage: Storage): void {
       if (pending === null) throw new ReferenceError("Inspect an export before confirming recovery.");
       const destination = recoverHistory(storage, pending);
       const url: URL = new URL(window.location.href);
-      url.pathname = pending.exportSchemaVersion === 4 ? "/impact.html" : pending.exportSchemaVersion === 1 ? "/" : "/decisions.html";
+      url.pathname = appPath(pending.exportSchemaVersion >= 4 ? "impact.html" : pending.exportSchemaVersion === 1 ? "" : "decisions.html");
       url.searchParams.delete("format");
+      if (pending.exportSchemaVersion === 5) url.searchParams.set("format", "6");
       if (pending.exportSchemaVersion === 3) url.searchParams.set("format", "4");
       window.location.assign(urlForSession(url, destination.id).href);
     } catch (error) {

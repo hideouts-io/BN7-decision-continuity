@@ -3,6 +3,7 @@ import type { ContinuityState, ContinuityPermission, ContinuityEvidence, Continu
 import { evidenceMarkup } from "./authored-render.ts";
 import { escapeHtml, getElement } from "./render.ts";
 import { outcomeLabel } from "./journey.ts";
+import { appPath } from "./app-path.ts";
 
 function difference(label: string, previous: readonly ContinuityPermission[], current: readonly ContinuityPermission[]): string {
   const added = current.filter((permission): boolean => !previous.includes(permission));
@@ -35,7 +36,7 @@ export function renderContinuityMode(): void {
   getElement("workspace-scope-description").textContent = "Compare each new capture against the evidence and request boundary behind the applicable human decision. Later knowledge never replaces earlier reasoning. All permissions, including documents:delete, are synthetic.";
   getElement("creation-description").textContent = "Create a synthetic read-only approval and its original basis. After each resolved review, capture another version. A revision must explicitly state the next accepted request boundary; prose alone does not change the rule.";
   getElement("assumption-rule-hint").textContent = "Structured rule: requested-permissions-within-boundary. The initial request boundary is documents:read; a human revision explicitly records the next boundary. Grants remain separate.";
-  getElement("authored-new").setAttribute("href", "/decisions.html?format=4");
+  getElement("authored-new").setAttribute("href", `${appPath("decisions.html")}?format=4`);
   getElement("continuity-summary").hidden = false;
   getElement("continuity-request-delete-label").hidden = false;
   getElement("continuity-grant-delete-label").hidden = false;

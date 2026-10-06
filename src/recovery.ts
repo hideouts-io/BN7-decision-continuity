@@ -11,6 +11,8 @@ import { ContinuityHistoryExportSchema, continuityHistoryExport } from "./contin
 import { continuityStorageKey, readContinuityState } from "./continuity-storage.ts";
 import { SharedHistoryExportSchema, sharedHistoryExport } from "./shared-export.ts";
 import { sharedStorageKey, readSharedState } from "./shared-storage.ts";
+import { ClarificationHistoryExportSchema, clarificationHistoryExport } from "./clarification-export.ts";
+import { clarificationStorageKey, readClarificationState } from "./clarification-storage.ts";
 import { MAX_IMPORT_BYTES, DEMONSTRATION_NOTICE } from "./history-contract.ts";
 
 export { MAX_IMPORT_BYTES, DEMONSTRATION_NOTICE } from "./history-contract.ts";
@@ -62,7 +64,7 @@ export const AuthoredHistoryExportSchema = z.object({
   const times: string[] = [...record.session.sources.map((event): string => event.recordedAt), ...(record.session.review === null ? [] : [record.session.review.openedAt]), ...record.session.outcomes.map((outcome): string => outcome.recordedAt)];
   if (times.some((time: string): boolean => Date.parse(time) > Date.parse(record.exportedAt))) context.addIssue({ code: "custom", message: "Export time cannot predate preserved history." });
 });
-export const HistoryExportSchema = z.discriminatedUnion("exportSchemaVersion", [LegacyHistoryExportSchema, AuthoredHistoryExportSchema, ContinuityHistoryExportSchema, SharedHistoryExportSchema]);
+export const HistoryExportSchema = z.discriminatedUnion("exportSchemaVersion", [LegacyHistoryExportSchema, AuthoredHistoryExportSchema, ContinuityHistoryExportSchema, SharedHistoryExportSchema, ClarificationHistoryExportSchema]);
 export type HistoryExport = z.infer<typeof HistoryExportSchema>;
 export type LegacyHistoryExport = z.infer<typeof LegacyHistoryExportSchema>;
 
@@ -85,15 +87,16 @@ export function parseHistoryExport(content: string): HistoryExport {
   }
   const record: HistoryExport = HistoryExportSchema.parse(JSON.parse(content));
   if (record.exportSchemaVersion === 3) continuityHistoryExport(record.session, record.exportedAt);
+  if (record.exportSchemaVersion === 5) clarificationHistoryExport(record.session, record.exportedAt);
   if (record.exportSchemaVersion === 4) sharedHistoryExport(record.session, record.exportedAt);
   return record;
 }
 
 /** Compare typed records; object-key order and unrelated extra fields do not change identity. */
 export function recoveryDestination(storage: Storage, record: HistoryExport): DemoSession {
-  const session: DemoSession = record.exportSchemaVersion === 4 ? { id: record.sessionId, storageKey: sharedStorageKey(record.sessionId) } : record.exportSchemaVersion === 3 ? { id: record.sessionId, storageKey: continuityStorageKey(record.sessionId) } : record.exportSchemaVersion === 2 ? { id: record.sessionId, storageKey: authoredStorageKey(record.sessionId) } : sessionForId(record.sessionId);
+  const session: DemoSession = record.exportSchemaVersion === 5 ? { id: record.sessionId, storageKey: clarificationStorageKey(record.sessionId) } : record.exportSchemaVersion === 4 ? { id: record.sessionId, storageKey: sharedStorageKey(record.sessionId) } : record.exportSchemaVersion === 3 ? { id: record.sessionId, storageKey: continuityStorageKey(record.sessionId) } : record.exportSchemaVersion === 2 ? { id: record.sessionId, storageKey: authoredStorageKey(record.sessionId) } : sessionForId(record.sessionId);
   const existing: string | null = storage.getItem(session.storageKey);
-  const stored = existing === null ? null : record.exportSchemaVersion === 4 ? readSharedState(storage, record.sessionId) : record.exportSchemaVersion === 3 ? readContinuityState(storage, record.sessionId) : record.exportSchemaVersion === 2 ? readAuthoredState(storage, record.sessionId) : StateSchema.parse(JSON.parse(existing));
+  const stored = existing === null ? null : record.exportSchemaVersion === 5 ? readClarificationState(storage, record.sessionId) : record.exportSchemaVersion === 4 ? readSharedState(storage, record.sessionId) : record.exportSchemaVersion === 3 ? readContinuityState(storage, record.sessionId) : record.exportSchemaVersion === 2 ? readAuthoredState(storage, record.sessionId) : StateSchema.parse(JSON.parse(existing));
   if (stored !== null && JSON.stringify(stored) !== JSON.stringify(record.session)) {
     throw new RangeError(`Session ${record.sessionId} already contains different history in this browser. Nothing was replaced. Use a separate browser profile to inspect this export.`);
   }
@@ -104,6 +107,7 @@ export function recoveryDestination(storage: Storage, record: HistoryExport): De
 export function recoverHistory(storage: Storage, record: HistoryExport): DemoSession {
   const validated: HistoryExport = HistoryExportSchema.parse(record);
   if (validated.exportSchemaVersion === 3) continuityHistoryExport(validated.session, validated.exportedAt);
+  if (validated.exportSchemaVersion === 5) clarificationHistoryExport(validated.session, validated.exportedAt);
   if (validated.exportSchemaVersion === 4) sharedHistoryExport(validated.session, validated.exportedAt);
   const session: DemoSession = recoveryDestination(storage, validated);
   if (storage.getItem(session.storageKey) === null) {

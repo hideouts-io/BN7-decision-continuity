@@ -11,7 +11,6 @@ import { SharedHistoryExportSchema } from "../src/shared-export.ts";
 import { sharedStorageKey } from "../src/shared-storage.ts";
 import { fillCreation } from "./authored-smoke.ts";
 
-const url = "http://127.0.0.1:5189";
 async function bytes(page: Page): Promise<Record<string, string>> { return page.evaluate((): Record<string, string> => Object.fromEntries(Object.entries(localStorage))); }
 async function saved(page: Page): Promise<SharedState> {
   const id: string = z.uuid().parse(new URL(page.url()).searchParams.get("session"));
@@ -53,7 +52,7 @@ async function narrow(page: Page): Promise<void> {
 }
 
 /** One canonical capture drives different explicit rules; real browser recovery and older-format byte preservation. */
-export async function checkSharedSource(browser: Browser): Promise<void> {
+export async function checkSharedSource(browser: Browser, url: string): Promise<void> {
   const started = performance.now();
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const recovery = await browser.newContext({ viewport: { width: 375, height: 812 }, reducedMotion: "reduce" });
@@ -118,7 +117,7 @@ export async function checkSharedSource(browser: Browser): Promise<void> {
     await inspect(destination, content); await destination.getByTestId("confirm-import").waitFor({ state: "visible" });
     assert.deepEqual(await bytes(destination), {}, "Recovery inspection writes nothing.");
     await narrow(destination); await destination.getByTestId("confirm-import").click();
-    await destination.waitForURL((next: URL): boolean => next.pathname === "/impact.html" && next.searchParams.get("session") === completed.id);
+    await destination.waitForURL((next: URL): boolean => next.pathname === new URL(`${url}/impact.html`).pathname && next.searchParams.get("session") === completed.id);
     assert.deepEqual(await saved(destination), completed); await narrow(destination);
     await destination.getByTestId("trail-review-2").focus(); await destination.keyboard.press("Enter");
     assert.ok((await destination.getByTestId("shared-inspection").innerText()).includes("unresolved"));

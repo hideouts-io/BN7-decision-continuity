@@ -11,7 +11,6 @@ import type { ContinuityState, ContinuityPermission } from "../src/continuity-mo
 import { ContinuityHistoryExportSchema, continuityHistoryExport } from "../src/continuity-export.ts";
 import { continuityStorageKey } from "../src/continuity-storage.ts";
 
-const url = "http://127.0.0.1:5189";
 async function snapshot(page: Page): Promise<Record<string, string>> {
   return page.evaluate((): Record<string, string> => Object.fromEntries(Object.entries(localStorage)));
 }
@@ -20,7 +19,7 @@ async function saved(page: Page): Promise<ContinuityState> {
   const raw = await page.evaluate((key: string): string | null => localStorage.getItem(key), continuityStorageKey(id));
   return ContinuityStateSchema.parse(JSON.parse(z.string().parse(raw)));
 }
-async function create(page: Page, title: string): Promise<ContinuityState> {
+async function create(page: Page, title: string, url: string): Promise<ContinuityState> {
   await page.goto(`${url}/decisions.html?format=4`);
   await fillCreation(page, title);
   await page.getByTestId("authored-create").focus();
@@ -60,7 +59,7 @@ async function accessible(page: Page): Promise<void> {
 }
 
 /** Repeated reassessment benchmark in real Chrome; timings measure automation, not practitioner setup burden. */
-export async function checkDecisionContinuity(browser: Browser): Promise<void> {
+export async function checkDecisionContinuity(browser: Browser, url: string): Promise<void> {
   const started: number = performance.now();
   const context: BrowserContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const recovery: BrowserContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
@@ -199,7 +198,7 @@ export async function checkDecisionContinuity(browser: Browser): Promise<void> {
     assert.ok((await restored.getByTestId("import-summary").innerText()).includes("2 reviews"));
     await restored.getByTestId("confirm-import").focus();
     await restored.keyboard.press("Enter");
-    await restored.waitForURL((next: URL): boolean => next.pathname === "/decisions.html" && next.searchParams.get("format") === "4");
+    await restored.waitForURL((next: URL): boolean => next.pathname === new URL(`${url}/decisions.html`).pathname && next.searchParams.get("format") === "4");
     await restored.getByTestId("authored-title").waitFor({ state: "visible" });
     await restored.reload();
     assert.deepEqual(await saved(restored), completed);
@@ -250,7 +249,7 @@ export async function checkDecisionContinuity(browser: Browser): Promise<void> {
     assert.equal(page.url().includes("format=4"), true);
     assert.equal((await snapshot(restored))[continuityStorageKey(completed.id)], restoredBytes[continuityStorageKey(completed.id)]);
 
-    const concurrent = await create(page, "Concurrent continuity control");
+    const concurrent = await create(page, "Concurrent continuity control", url);
     const stale: Page = await context.newPage();
     await stale.goto(page.url());
     await capture(page, ["documents:read"], ["documents:read"], "Later unchanged synthetic capture for a stale-tab consistency check.");
@@ -260,7 +259,7 @@ export async function checkDecisionContinuity(browser: Browser): Promise<void> {
     assert.deepEqual(await snapshot(stale), concurrentBytes);
     assert.equal((await saved(page)).id, concurrent.id);
     // Seed a valid large synthetic history, then exercise the real UI/storage append boundary.
-    await create(page, "Recoverable-size boundary control");
+    await create(page, "Recoverable-size boundary control", url);
     await capture(page, ["documents:read", "documents:write"], ["documents:read"], "Synthetic write request used for a large-history persistence boundary test.");
     await page.getByTestId("authored-open-review").click();
     let nearLimit: ContinuityState = await saved(page);
@@ -289,7 +288,7 @@ export async function checkDecisionContinuity(browser: Browser): Promise<void> {
     await page.getByTestId("authored-error").waitFor({ state: "visible" });
     assert.ok((await page.getByTestId("authored-error").innerText()).includes("1 MiB"));
     assert.deepEqual(await snapshot(page), nearLimitBytes, "Oversized appends must never truncate or rewrite the saved history.");
-    await create(page, "Withdrawn approval control");
+    await create(page, "Withdrawn approval control", url);
     await capture(page, ["documents:read", "documents:write"], ["documents:read"], "Synthetic changed request preceding withdrawal; no actual grant or execution observed.");
     await page.getByTestId("authored-open-review").click();
     await outcome(page, "withdraw", "Withdraw this synthetic approval; a new approval requires a new decision and preserved independent basis.");

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { appPath } from "./app-path.ts";
 import { appendAuthoredEvidence, appendAuthoredOutcome, createAuthoredState, openAuthoredReview } from "./authored-model.ts";
 import type { AuthoredState } from "./authored-model.ts";
 import { listAuthoredIds, persistAuthoredState, readAuthoredState } from "./authored-storage.ts";
@@ -153,7 +154,7 @@ getElement("authored-export").addEventListener("click", (): void => action((): v
 }));
 getElement("authored-select").addEventListener("change", (): void => action((): void => {
   const id: string = input("authored-select").value;
-  if (id === "") window.location.assign("/decisions.html");
+  if (id === "") window.location.assign(appPath("decisions.html"));
   else {
     const url = new URL(window.location.href);
     url.searchParams.delete("format");

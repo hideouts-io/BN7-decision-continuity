@@ -84,6 +84,8 @@ Follow the [shared-source README workflow](../README.md#trace-a-shared-source-ac
 
 Ask the person to reassess one decision and reconstruct its original basis and outcome, then explain why another decision and a pending review of earlier evidence are unchanged. Measure setup, navigation and capture/link maintenance only during an actual session. The current Atlas packet has not been regenerated into a v5 protocol; preserve it and keep observations blank until participation. Automated or simulated outcomes cannot fill participant fields, establish comprehension, or measure demand.
 
+For an optional clarification critique, follow the [v6 README workflow](../README.md#reassess-after-a-clarified-declaration) in a new rehearsal. Ask what the Production declaration established, which question remains tied to Unknown evidence, why replacement is distinct from approval, and which hold applies before the new outcome. Ask the person to inspect both frozen targets and identify what remains unobserved. Existing Atlas packets are not a v6 participant protocol. Keep observations blank until a real session; do not count automated or simulated responses as comprehension or demand.
+
 ## Ask neutral follow-up questions
 
 - What did the change establish, and what needs additional evidence?

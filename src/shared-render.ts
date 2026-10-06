@@ -1,6 +1,6 @@
 import { escapeHtml, getElement } from "./render.ts";
 import { sharedBasis, sharedDecision, sharedEvidence, sharedImpact, sharedPendingReview } from "./shared-model.ts";
-import type { SharedState, SharedEvidence, SharedDecision } from "./shared-model.ts";
+import type { SharedHistory, SharedEvidence, SharedDecision } from "./shared-model.ts";
 import { outcomeLabel } from "./journey.ts";
 
 export type TrailKind = "source" | "evidence" | "assumption" | "decision" | "review" | "outcome";
@@ -8,22 +8,22 @@ export type TrailSelection = Readonly<{ kind: TrailKind; id: string }>;
 function facts(entries: readonly (readonly [string, string])[]): string {
   return `<dl class="shared-facts">${entries.map(([label, value]): string => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>`;
 }
-function version(state: SharedState, evidenceId: string): string {
+function version(state: SharedHistory, evidenceId: string): string {
   const index: number = state.sources.findIndex((event): boolean => event.evidence.id === evidenceId);
   if (index < 0) throw new ReferenceError(`Evidence ${evidenceId} has no shared source version.`);
   return `Version ${index + 1}`;
 }
-function evidenceDetails(state: SharedState, evidence: SharedEvidence): string {
+function evidenceDetails(state: SharedHistory, evidence: SharedEvidence): string {
   return facts([["Version", version(state, evidence.id)], ["Evidence UUID", evidence.id], ["Canonical source", evidence.sourceId], ["Captured · UTC", evidence.capturedAt], ["Requested", evidence.requestedPermissions.join(", ")], ["Declared granted", evidence.grantedPermissions.join(", ")], ["Deployment declaration", evidence.environment], ["Runtime", evidence.observedActivity], ["Provenance", evidence.provenance], ["Source note", evidence.sourceNote]]);
 }
 function node(kind: TrailKind, id: string, label: string, detail: string, testId: string): string {
   return `<button type="button" class="trail-node" data-testid="${testId}" data-trail-kind="${kind}" data-trail-id="${escapeHtml(id)}" aria-controls="shared-inspector"><span>${escapeHtml(label)}</span><strong>${escapeHtml(detail)}</strong><span class="trail-inspect">Inspect ↗</span></button>`;
 }
-function decisionPath(state: SharedState, record: SharedDecision, index: number, latest: SharedEvidence): string {
+function decisionPath(state: SharedHistory, record: SharedDecision, index: number, latest: SharedEvidence): string {
   const basis = sharedBasis(state, record.decision.id), impact = sharedImpact(state, record, basis, latest);
   const review = state.reviews.filter((item): boolean => item.decisionId === record.decision.id).at(-1);
   const pending = sharedPendingReview(state, record.decision.id);
-  const outcome = state.outcomes.filter((item): boolean => item.decisionId === record.decision.id).at(-1);
+  const outcome = state.outcomes.filter((item): boolean => item.reviewId === review?.id).at(-1);
   const labels = { affected: "Affected · review needed", unchanged: "No relevant change", unresolved: "Unresolved applicability", inactive: "Withdrawn" } as const;
   return `<article class="shared-path shared-${impact.status}" data-testid="shared-decision-${index}" aria-labelledby="shared-title-${index}"><div class="shared-path-heading"><div><p class="eyebrow">Decision ${index + 1} / ${record.assumption.scope === "Any" ? "Any declared context" : "Production only"}</p><h3 id="shared-title-${index}">${escapeHtml(record.decision.title)}</h3></div><span class="shared-status" data-testid="shared-status-${index}" data-status="${impact.status}">${labels[impact.status]}</span></div><p class="shared-explanation" data-testid="shared-explanation-${index}">${escapeHtml(impact.explanation)}</p><div class="shared-path-nodes">
     ${node("assumption", record.assumption.id, "Assumption", record.assumption.field === "requestedPermissions" ? "Request boundary" : "Grant boundary", `trail-assumption-${index}`)}
@@ -32,7 +32,7 @@ function decisionPath(state: SharedState, record: SharedDecision, index: number,
     ${outcome === undefined ? `<div class="trail-placeholder"><span>Recorded outcome</span><strong>None</strong></div>` : node("outcome", outcome.id, "Human-entered outcome", outcomeLabel(outcome.outcome), `trail-outcome-${index}`)}
     </div><p class="history-meta">${escapeHtml(record.decision.actor)} · ${pending === null ? "No pending review" : `Review stays tied to ${version(state, pending.evidenceId)}, independently of the latest capture`}. Runtime Not observed.</p></article>`;
 }
-function comparison(state: SharedState, record: SharedDecision): string {
+function comparison(state: SharedHistory, record: SharedDecision): string {
   const basis = sharedBasis(state, record.decision.id), latest = state.sources.at(-1);
   if (latest === undefined) throw new ReferenceError("A decision comparison requires shared evidence.");
   if (basis === null) return "<p>This decision was withdrawn. Its original basis and earlier outcomes remain below.</p>";
@@ -41,7 +41,7 @@ function comparison(state: SharedState, record: SharedDecision): string {
   const removed = previous[field].filter((permission): boolean => !latest.evidence[field].includes(permission));
   return facts([["Applicable revision", basis.revision], ["Decision scope", basis.statement], ["Accountable rationale", basis.rationale], ["Basis evidence", `${version(state, basis.evidenceId)} · ${basis.evidenceId}`], ["Basis source event", basis.sourceEventId], ["Compared evidence", `${version(state, latest.evidence.id)} · ${latest.evidence.id}`], ["Compared source event", latest.id], ["Monitored field", field === "requestedPermissions" ? "Requested permissions" : "Declared granted permissions"], ["Field change", [...added.map((permission): string => `+ ${permission}`), ...removed.map((permission): string => `− ${permission}`)].join("; ") || "No permission change"], ["Deployment change", `${previous.environment} → ${latest.evidence.environment}`], ["Accepted boundary", basis.acceptedPermissions.join(", ")], ["Rule scope", record.assumption.scope], ["Responsible code", basis.actor], ["Rule result", sharedImpact(state, record, basis, latest.evidence).explanation], ["Still unknown", "Runtime activity and real permissions are unobserved. Reviewer codes are unauthenticated. Applicability uses declared context only."]]);
 }
-export function inspectSharedNode(state: SharedState, selection: TrailSelection): void {
+export function inspectSharedNode(state: SharedHistory, selection: TrailSelection): void {
   let title: string, content: string;
   if (selection.kind === "source") {
     if (selection.id !== state.source.id) throw new ReferenceError("Selected source is not the canonical shared source.");
@@ -64,7 +64,7 @@ export function inspectSharedNode(state: SharedState, selection: TrailSelection)
     const review = state.reviews.find((item): boolean => item.id === selection.id);
     if (review === undefined) throw new ReferenceError("Selected review is absent from recorded history.");
     title = "Assigned review · frozen basis";
-    content = facts([["Review UUID", review.id], ["Decision UUID", review.decisionId], ["Assumption UUID", review.assumptionId], ["Assigned code", review.actor], ["Opened · UTC", review.openedAt], ["Trigger", review.trigger], ["Frozen decision revision", review.basis.revision], ["Frozen decision rationale", review.basis.rationale], ["Basis evidence", review.basis.evidenceId], ["Basis source event", review.basis.sourceEventId], ["Target evidence", review.evidenceId], ["Target source event", review.sourceEventId], ["Accepted boundary at opening", review.basis.acceptedPermissions.join(", ")]]) + `<details><summary>Inspect exact reviewed evidence</summary>${evidenceDetails(state, sharedEvidence(state, review.evidenceId))}</details>`;
+    content = `<div data-testid="frozen-review-snapshot" data-review-id="${review.id}" data-evidence-id="${review.evidenceId}" data-environment="${sharedEvidence(state, review.evidenceId).environment}">` + facts([["Review UUID", review.id], ["Decision UUID", review.decisionId], ["Assumption UUID", review.assumptionId], ["Assigned code", review.actor], ["Opened · UTC", review.openedAt], ["Trigger", review.trigger], ["Viewed perspective", "This review at opening; later evidence does not replace its target"], ["Target deployment declaration", sharedEvidence(state, review.evidenceId).environment], ["Explanation from frozen references", sharedImpact(state, sharedDecision(state, review.decisionId), review.basis, sharedEvidence(state, review.evidenceId)).explanation], ["Frozen decision revision", review.basis.revision], ["Frozen decision scope", review.basis.statement], ["Frozen decision rationale", review.basis.rationale], ["Basis evidence", review.basis.evidenceId], ["Basis source event", review.basis.sourceEventId], ["Target evidence", review.evidenceId], ["Target source event", review.sourceEventId], ["Accepted boundary at opening", review.basis.acceptedPermissions.join(", ")]]) + `<details><summary>Inspect exact reviewed evidence</summary>${evidenceDetails(state, sharedEvidence(state, review.evidenceId))}</details></div>`;
   } else {
     const outcome = state.outcomes.find((item): boolean => item.id === selection.id);
     if (outcome === undefined) throw new ReferenceError("Selected outcome is absent from recorded history.");
@@ -74,7 +74,7 @@ export function inspectSharedNode(state: SharedState, selection: TrailSelection)
   getElement("inspector-title").textContent = title;
   getElement("shared-inspection").innerHTML = content;
 }
-export function renderSharedState(state: SharedState): void {
+export function renderSharedState(state: SharedHistory): void {
   const latest = state.sources.at(-1), baseline = state.sources[0];
   if (latest === undefined || baseline === undefined) throw new ReferenceError("Shared-source rendering requires a baseline.");
   getElement("shared-creation").hidden = true;
