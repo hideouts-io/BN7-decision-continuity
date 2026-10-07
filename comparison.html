@@ -38,7 +38,7 @@
         </section>
         <section id="packet-intake" class="panel authored-panel packet-intake" tabindex="-1" aria-labelledby="packet-intake-title">
           <p class="eyebrow">01 / Inspect a local file</p><h2 id="packet-intake-title">Bring the selected comparison.</h2>
-          <p id="packet-input-help" class="section-lede">In a v6 or v7 decision workspace, choose a decision and From / To recorded states, then download the selected comparison. Choose that JSON packet here. This input accepts comparison packet v1, not a complete operational history or a source file.</p>
+          <p id="packet-input-help" class="section-lede">In a v6 or v7 decision workspace, choose a decision and From / To recorded states, then download the selected comparison. Choose that JSON packet here. This input accepts comparison packet v1 for decision history, or v2 including the selected evidence questions and human responses. It does not accept a complete operational history or a source file.</p>
           <form id="packet-form" data-testid="packet-form" class="authored-form">
             <div class="form-field"><label for="packet-file">Synthetic comparison packet · JSON · up to 1 MiB</label><input id="packet-file" data-testid="packet-file" type="file" accept=".json,application/json" aria-describedby="packet-input-help" required /></div>
             <div class="packet-actions"><button id="packet-inspect" data-testid="packet-inspect" class="btn primary" type="submit">Inspect comparison →</button><button id="packet-clear" data-testid="packet-clear" class="btn secondary" type="button">Clear inspection</button><a class="section-next" href="./impact.html?format=6">Open decision workspace →</a></div>

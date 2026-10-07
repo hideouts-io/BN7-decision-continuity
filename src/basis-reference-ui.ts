@@ -10,7 +10,7 @@ export function inspectBasisReference(control: HTMLButtonElement): void {
   if (kind === "decision" || kind === "assumption") {
     target = document.getElementById(`${prefix}-original-${kind}`);
     if (target?.textContent !== id) throw new ReferenceError(`The ${side} endpoint has no matching ${kind} ${id}.`);
-  } else if (kind === "review" || kind === "outcome" || kind === "replacement") {
+  } else if (kind === "review" || kind === "outcome" || kind === "replacement" || kind === "requirement" || kind === "resolution") {
     target = document.getElementById(`${prefix}-${kind}-${id}`);
   } else if (kind === "source" || kind === "source-event" || kind === "evidence") {
     target = column.querySelector<HTMLElement>(`[data-basis-${kind}-id="${CSS.escape(id)}"]`);

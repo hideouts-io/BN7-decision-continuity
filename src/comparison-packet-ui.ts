@@ -5,6 +5,7 @@ import type { BasisColumn } from "./decision-basis-render.ts";
 import { basisCapturesMarkup, basisSnapshotMarkup } from "./decision-basis-render.ts";
 import { basisComparisonMarkup } from "./basis-comparison-render.ts";
 import { comparisonPacketMetadataMarkup } from "./comparison-packet-render.ts";
+import { uncertaintyBasisMarkup } from "./uncertainty-basis-render.ts";
 import { inspectBasisReference } from "./basis-reference-ui.ts";
 import { getElement } from "./render.ts";
 
@@ -15,7 +16,7 @@ function button(id: string): HTMLButtonElement {
 }
 function packetError(error: Error): void {
   const detail = error instanceof z.ZodError
-    ? `Comparison packet v1 validation failed: ${error.issues.slice(0, 3).map((issue): string => `${issue.path.join(".") || "packet"}: ${issue.message}`).join("; ").slice(0, 600)}. Export a new selected comparison from a valid workspace.`
+    ? `Comparison packet validation failed: ${error.issues.slice(0, 3).map((issue): string => `${issue.path.join(".") || "packet"}: ${issue.message}`).join("; ").slice(0, 600)}. Export a new selected comparison from a valid workspace.`
     : error instanceof SyntaxError ? "The comparison packet is not valid JSON. Choose an intact comparison packet export."
     : error instanceof DOMException && error.name === "NotReadableError" ? "The selected packet could not be read. Check that it remains available locally and choose it again."
     : `${error.name}: ${error.message.slice(0, 600)}`;
@@ -32,7 +33,9 @@ function renderEndpoint(inspection: ComparisonPacketInspection, side: "from" | "
   target.dataset.knownSourceId = snapshot.knownSource.id;
   target.dataset.pendingReviewId = snapshot.pendingReview?.id ?? "";
   target.dataset.eventId = inspection.packet[side].eventId ?? "frozen-latest";
-  target.innerHTML = basisSnapshotMarkup(inspection.archive, snapshot, prefix, `${side === "from" ? "From" : "To"} · ${label}`, inspection.comparison.receiptContexts[side]) + basisCapturesMarkup(inspection.archive, selected, prefix);
+  const context = inspection.comparison.clarificationContexts?.[side] ?? null;
+  if (inspection.packet.packetSchemaVersion === 2 && context === null) throw new ReferenceError("A v2 comparison packet requires its exact selected evidence-question and response context.");
+  target.innerHTML = basisSnapshotMarkup(inspection.archive, snapshot, prefix, `${side === "from" ? "From" : "To"} · ${label}`, inspection.comparison.receiptContexts[side]) + basisCapturesMarkup(inspection.archive, selected, prefix) + (context === null ? "" : uncertaintyBasisMarkup(inspection.archive, context, prefix));
 }
 
 /** Keep imported packets and derived explanations in memory; this route has no operational restore or storage boundary. */

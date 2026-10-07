@@ -8,9 +8,15 @@ import type { BasisColumn } from "./decision-basis-render.ts";
 import { basisReceiptContexts } from "./basis-receipts.ts";
 import { inspectBasisReference } from "./basis-reference-ui.ts";
 import { createComparisonPacket } from "./comparison-packet.ts";
+import type { UncertaintyState } from "./uncertainty-model.ts";
+import { uncertaintyBasisEvents, uncertaintyBasisAt, compareUncertaintyDecisionBases } from "./uncertainty-basis.ts";
+import type { UncertaintyBasisContext } from "./uncertainty-basis.ts";
+import { uncertaintyBasisMarkup } from "./uncertainty-basis-render.ts";
+import { createUncertaintyComparisonPacket } from "./uncertainty-comparison-packet.ts";
 import { escapeHtml, getElement } from "./render.ts";
 
 type Side = "from" | "to";
+type BasisWorkspace = ClarificationState | UncertaintyState;
 
 function select(id: string): HTMLSelectElement {
   const element = getElement(id);
@@ -36,18 +42,29 @@ function clearSnapshot(element: HTMLElement): void {
   element.replaceChildren();
   for (const key of ["decisionId", "basisRevision", "knownSourceId", "pendingReviewId", "eventId"]) delete element.dataset[key];
 }
-function snapshot(state: ClarificationState, decisionId: string, eventId: string, side: Side, prefix: BasisColumn): BasisInspection | null {
+function workspaceHistory(state: BasisWorkspace): ClarificationState {
+  return state.schemaVersion === 7 ? state.history : state;
+}
+function workspaceInspection(state: BasisWorkspace, decisionId: string, eventId: string): Readonly<{ inspection: BasisInspection; clarificationContext: UncertaintyBasisContext | null }> {
+  if (state.schemaVersion === 7) {
+    const inspection = uncertaintyBasisAt(state, decisionId, eventId);
+    return { inspection, clarificationContext: inspection.clarificationContext };
+  }
+  return { inspection: decisionBasisAt(state, decisionId, eventId), clarificationContext: null };
+}
+function snapshot(state: BasisWorkspace, decisionId: string, eventId: string, side: Side, prefix: BasisColumn): BasisInspection | null {
   const element = getElement(prefix);
   clearSnapshot(element);
   try {
-    const inspection = decisionBasisAt(state, decisionId, eventId), data = inspection.historical;
+    const perspective = workspaceInspection(state, decisionId, eventId), inspection = perspective.inspection, data = inspection.historical;
+    const history = workspaceHistory(state);
     element.dataset.decisionId = data.record.decision.id;
     element.dataset.basisRevision = data.basis?.revision ?? "";
     element.dataset.knownSourceId = data.knownSource.id;
     element.dataset.pendingReviewId = data.pendingReview?.id ?? "";
     element.dataset.eventId = inspection.event?.id ?? "latest";
     const heading = `${side === "from" ? "From" : "To"} · ${inspection.event === null ? "latest recorded state" : `immediately after ${inspection.event.label}`}`;
-    element.innerHTML = basisSnapshotMarkup(state, data, prefix, heading, basisReceiptContexts(state, inspection)) + basisCapturesMarkup(state, inspection, prefix);
+    element.innerHTML = basisSnapshotMarkup(history, data, prefix, heading, basisReceiptContexts(history, inspection)) + basisCapturesMarkup(history, inspection, prefix) + (perspective.clarificationContext === null ? "" : uncertaintyBasisMarkup(history, perspective.clarificationContext, prefix));
     return inspection;
   } catch (error) {
     if (!(error instanceof Error)) throw error;
@@ -62,10 +79,10 @@ function errorMessage(message: string): void {
 }
 
 /** Keep both selections in memory and isolate inspection errors from the recording workflow. */
-export function connectDecisionBasis(): (next: ClarificationState | null) => void {
+export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
   const decision = select("basis-decision"), from = select("basis-event"), to = select("basis-compare-event");
   const download = button("basis-export");
-  let state: ClarificationState | null = null;
+  let state: BasisWorkspace | null = null;
   let decisionId: string | null = null;
   let fromEventId: string = "latest", toEventId: string = "latest";
 
@@ -77,9 +94,10 @@ export function connectDecisionBasis(): (next: ClarificationState | null) => voi
     const differences = getElement("basis-differences");
     differences.replaceChildren();
     clearSnapshot(getElement("basis-historical")); clearSnapshot(getElement("basis-latest"));
-    choices(decision, state.originalDecisions.map((record): HTMLOptionElement => option(record.decision.id, record.decision.title)), decisionId);
+    const history = workspaceHistory(state);
+    choices(decision, history.originalDecisions.map((record): HTMLOptionElement => option(record.decision.id, record.decision.title)), decisionId);
     try {
-      const events = decisionBasisEvents(state, decisionId);
+      const events = state.schemaVersion === 7 ? uncertaintyBasisEvents(state, decisionId) : decisionBasisEvents(state, decisionId);
       const options = (): readonly HTMLOptionElement[] => [option("latest", "Latest recorded state"), ...events.map((item): HTMLOptionElement => option(item.id, `${item.label} · ${item.recordedAt} · ${item.id.slice(0, 8)}`))];
       choices(from, options(), fromEventId); choices(to, options(), toEventId);
       const fromInspection = snapshot(state, decisionId, fromEventId, "from", "basis-historical");
@@ -90,7 +108,7 @@ export function connectDecisionBasis(): (next: ClarificationState | null) => voi
         errorMessage([fromInspection === null ? getElement("basis-from-error").innerText : "", toInspection === null ? getElement("basis-to-error").innerText : ""].filter((message): boolean => message.length > 0).join(" "));
         return;
       }
-      const comparison = compareDecisionBases(state, decisionId, fromEventId, toEventId);
+      const comparison = state.schemaVersion === 7 ? compareUncertaintyDecisionBases(state, decisionId, fromEventId, toEventId) : compareDecisionBases(state, decisionId, fromEventId, toEventId);
       differences.innerHTML = basisComparisonMarkup(comparison);
       download.disabled = false;
       getElement("basis-selection-status").textContent = `Showing the two requested recorded perspectives · ${comparison.direction} comparison. Reference controls open their exact endpoint records. Saved history is unchanged.`;
@@ -118,7 +136,8 @@ export function connectDecisionBasis(): (next: ClarificationState | null) => voi
     getElement("basis-packet-status").textContent = "";
     try {
       if (state === null || decisionId === null || download.disabled) throw new ReferenceError("Choose a decision and two valid recorded endpoints before exporting their comparison.");
-      const packet = createComparisonPacket(state, decisionId, fromEventId, toEventId, new Date().toISOString());
+      const now = new Date().toISOString();
+      const packet = state.schemaVersion === 7 ? createUncertaintyComparisonPacket(state, decisionId, fromEventId, toEventId, now) : createComparisonPacket(state, decisionId, fromEventId, toEventId, now);
       const blob = new Blob([JSON.stringify(packet, null, 2)], { type: "application/json" }), url = URL.createObjectURL(blob), anchor = document.createElement("a");
       anchor.href = url; anchor.download = `decision-continuity-comparison-${decisionId}.json`;
       anchor.click(); URL.revokeObjectURL(url);
@@ -130,12 +149,12 @@ export function connectDecisionBasis(): (next: ClarificationState | null) => voi
       getElement("basis-packet-status").textContent = "No comparison packet was downloaded. Resolve the selected endpoint error before exporting again.";
     }
   });
-  return (next: ClarificationState | null): void => {
+  return (next: BasisWorkspace | null): void => {
     state = next;
     getElement("basis-panel").hidden = next === null;
     if (next === null) { download.disabled = true; getElement("basis-packet-status").textContent = ""; return; }
     if (decisionId === null) {
-      const production = next.originalDecisions.find((record): boolean => record.assumption.scope === "Production");
+      const production = workspaceHistory(next).originalDecisions.find((record): boolean => record.assumption.scope === "Production");
       if (production === undefined) {
         errorMessage("ReferenceError: The rehearsal has no Production decision for the initial selection.");
         return;

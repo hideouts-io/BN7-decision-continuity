@@ -4,7 +4,7 @@ import type { ClarificationState, ClarificationHistory } from "./clarification-m
 import { sharedDecision } from "./shared-model.ts";
 
 export type BasisEvent = Readonly<{
-  id: string; kind: "original" | "capture" | "review" | "outcome" | "replacement";
+  id: string; kind: "original" | "capture" | "review" | "outcome" | "replacement" | "requirement" | "resolution";
   recordedAt: string; label: string; memberIds: readonly string[]; predecessorIds: readonly string[];
 }>;
 type Link = readonly [string, string];

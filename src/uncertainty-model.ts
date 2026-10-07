@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { AuthoredDecisionSchema, FictionalActorSchema } from "./authored-model.ts";
 import { ClarificationStateSchema } from "./clarification-model.ts";
-import type { ClarificationState } from "./clarification-model.ts";
-import { decisionBasisEvents, eventAncestors } from "./basis-events.ts";
-import { decisionBasisAt } from "./decision-basis.ts";
+import type { ClarificationState, ClarificationHistory } from "./clarification-model.ts";
+import { decisionBasisEventsFromRecords, eventAncestors } from "./basis-events.ts";
+import { decisionBasisAtRecords } from "./decision-basis.ts";
 import { sharedDecision, sharedPendingReview } from "./shared-model.ts";
 import type { SharedReview } from "./shared-model.ts";
 
@@ -14,11 +14,11 @@ export const RequirementInputSchema = z.strictObject({
 export const ResolutionInputSchema = z.strictObject({
   actor: FictionalActorSchema, sourceEventId: z.uuid(), result: z.enum(["satisfied", "insufficient"]), rationale: AuthoredDecisionSchema.shape.rationale,
 });
-const RequirementSchema = RequirementInputSchema.extend({
+export const RequirementSchema = RequirementInputSchema.extend({
   id: z.uuid(), recordedAt: z.iso.datetime(), kind: z.literal("declare-deployment-context"), field: z.literal("environment"), expectedEnvironment: z.literal("Production"),
   decisionId: z.uuid(), assumptionId: z.uuid(), sourceId: z.uuid(), reviewId: z.uuid(), deferredOutcomeId: z.uuid(), sourceEventId: z.uuid(), evidenceId: z.uuid(),
 });
-const ResolutionSchema = ResolutionInputSchema.extend({ id: z.uuid(), requirementId: z.uuid(), evidenceId: z.uuid(), recordedAt: z.iso.datetime() });
+export const ResolutionSchema = ResolutionInputSchema.extend({ id: z.uuid(), requirementId: z.uuid(), evidenceId: z.uuid(), recordedAt: z.iso.datetime() });
 const UncertaintyFieldsSchema = z.strictObject({
   schemaVersion: z.literal(7), id: z.uuid(), createdAt: z.iso.datetime(), history: ClarificationStateSchema,
   requirements: z.array(RequirementSchema), resolutions: z.array(ResolutionSchema),
@@ -28,9 +28,10 @@ export type ResolutionInput = z.infer<typeof ResolutionInputSchema>;
 export type UncertaintyRequirement = z.infer<typeof RequirementSchema>;
 export type UncertaintyResolution = z.infer<typeof ResolutionSchema>;
 export type UncertaintyState = z.infer<typeof UncertaintyFieldsSchema>;
+export type UncertaintyJournal = Readonly<{ id: string; createdAt: string; history: ClarificationHistory; requirements: readonly UncertaintyRequirement[]; resolutions: readonly UncertaintyResolution[] }>;
 type SourceEvent = ClarificationState["sources"][number];
 
-function historyTimes(history: ClarificationState): readonly string[] {
+function historyTimes(history: ClarificationHistory): readonly string[] {
   return [...history.sources.map((event): string => event.recordedAt), ...history.reviews.map((review): string => review.openedAt), ...history.outcomes.map((outcome): string => outcome.recordedAt), ...history.replacements.map((event): string => event.recordedAt)];
 }
 export function uncertaintyRecordTimes(state: UncertaintyState): readonly string[] {
@@ -40,11 +41,11 @@ function requireAppendTime(times: readonly string[], recordedAt: string): void {
   const time: string = z.iso.datetime().parse(recordedAt);
   if (times.some((previous: string): boolean => Date.parse(previous) > Date.parse(time))) throw new RangeError("A new uncertainty event cannot predate any record already present in this continuation. No event was appended.");
 }
-function historyIds(history: ClarificationState): readonly string[] {
+function historyIds(history: ClarificationHistory): readonly string[] {
   return [history.id, history.source.id, ...history.originalDecisions.flatMap((record): string[] => [record.decision.id, record.assumption.id]), ...history.sources.flatMap((event): string[] => [event.id, event.evidence.id]), ...history.reviews.map((review): string => review.id), ...history.outcomes.map((outcome): string => outcome.id), ...history.replacements.map((event): string => event.id)];
 }
-function requireCausalHistory(history: ClarificationState): void {
-  for (const record of history.originalDecisions) eventAncestors(decisionBasisEvents(history, record.decision.id));
+function requireCausalHistory(history: ClarificationHistory): void {
+  for (const record of history.originalDecisions) eventAncestors(decisionBasisEventsFromRecords(history, record.decision.id));
 }
 function sameHistoryPrefix(previous: ClarificationState, next: ClarificationState): boolean {
   return previous.id === next.id
@@ -86,7 +87,7 @@ export function uncertaintyResolutionCandidates(state: UncertaintyState, require
 }
 
 /** Validate frozen eligibility at creation, so later replacements and human outcomes remain valid history. */
-export const UncertaintyStateSchema = UncertaintyFieldsSchema.superRefine((state, context): void => {
+export function validateUncertaintyJournal(state: UncertaintyJournal, context: z.RefinementCtx): void {
   function require(condition: boolean, message: string): void { if (!condition) context.addIssue({ code: "custom", message }); }
   const ids = [state.id, ...historyIds(state.history), ...state.requirements.map((requirement): string => requirement.id), ...state.resolutions.map((resolution): string => resolution.id)];
   require(new Set(ids).size === ids.length, "Uncertainty continuation, requirements and resolutions require distinct UUIDs across every preserved entity.");
@@ -116,7 +117,7 @@ export const UncertaintyStateSchema = UncertaintyFieldsSchema.superRefine((state
     const laterReview = state.history.reviews.filter((item): boolean => item.decisionId === requirement.decisionId).find((item): boolean => state.history.reviews.indexOf(item) > state.history.reviews.indexOf(review) && Date.parse(item.openedAt) <= time);
     require(laterReview === undefined && !state.history.replacements.some((event): boolean => event.oldReviewId === review.id && Date.parse(event.recordedAt) <= time), "The deferred review must still be active when its requirement is recorded. Same-time closure without an explicit ordering is unsupported.");
     try {
-      const perspective = decisionBasisAt(state.history, requirement.decisionId, outcome.id).historical;
+      const perspective = decisionBasisAtRecords(state.history, requirement.decisionId, outcome.id).historical;
       require(perspective.basis !== null && perspective.pendingReview?.id === review.id, "The referenced deferral must preserve an active decision basis and its unresolved review.");
     } catch (error) {
       if (!(error instanceof RangeError) && !(error instanceof ReferenceError)) throw error;
@@ -139,7 +140,10 @@ export const UncertaintyStateSchema = UncertaintyFieldsSchema.superRefine((state
     require(time >= Date.parse(requirement.recordedAt) && time >= Date.parse(candidate.recordedAt) && (last === undefined || time >= Date.parse(last.recordedAt)), "A resolution cannot predate its requirement, referenced capture or earlier attempt.");
     require(resolution.result !== "satisfied" || candidate.evidence.environment === "Production", "Satisfaction requires a declared Production context. Unknown or Sandbox cannot satisfy this requirement, and no declaration proves runtime behavior or approval.");
   });
-});
+}
+
+/** Operational histories retain their original three-decision validation; focused packets validate separately. */
+export const UncertaintyStateSchema = UncertaintyFieldsSchema.superRefine(validateUncertaintyJournal);
 
 /** Explicit enrollment creates a separate continuation; its nested original workspace identity remains unchanged. */
 export function createUncertaintyState(history: ClarificationState, id: string, createdAt: string): UncertaintyState {

@@ -138,7 +138,7 @@ function show(next: SharedWorkspace): void {
   renderSharedState(next);
   renderWorkspaceAttention(next);
   if (next.schemaVersion === 6) renderClarificationHistory(next);
-  refreshDecisionBasis(next.schemaVersion === 6 ? next : null);
+  refreshDecisionBasis(uncertainty ?? (next.schemaVersion === 6 ? next : null));
   const selection = field("shared-review-decision"), previous: string = selection.value;
   if (!(selection instanceof HTMLSelectElement)) throw new TypeError("Decision picker must be a select.");
   selection.replaceChildren(...next.originalDecisions.map((record): HTMLOptionElement => {

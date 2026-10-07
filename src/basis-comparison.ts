@@ -5,9 +5,10 @@ import type { BasisInspection, BasisSnapshot } from "./decision-basis.ts";
 import type { ContinuityPermission } from "./continuity-model.ts";
 import { basisReceiptContextsFromRecords, compareReceiptContexts } from "./basis-receipts.ts";
 import type { BasisReceiptContext } from "./basis-receipts.ts";
+import type { UncertaintyBasisContext } from "./uncertainty-basis.ts";
 
 export type BasisReference = Readonly<{
-  kind: "decision" | "assumption" | "source" | "source-event" | "evidence" | "review" | "outcome" | "replacement";
+  kind: "decision" | "assumption" | "source" | "source-event" | "evidence" | "review" | "outcome" | "replacement" | "requirement" | "resolution";
   id: string;
 }>;
 export type BasisChangedFact = Readonly<{
@@ -28,6 +29,8 @@ export type BasisComparison = Readonly<{
   preservedOriginalRules: readonly BasisPreservedRule[]; ruleVersionStatus: "unrecorded";
   receiptContexts: Readonly<{ from: readonly BasisReceiptContext[]; to: readonly BasisReceiptContext[] }>;
   receiptChanges: readonly BasisChangedFact[];
+  clarificationContexts: Readonly<{ from: UncertaintyBasisContext; to: UncertaintyBasisContext }> | null;
+  clarificationChanges: readonly BasisChangedFact[];
 }>;
 type SourceCapture = ClarificationState["sources"][number];
 type EndpointFact = Readonly<{ key: string; label: string; value: string; references: readonly BasisReference[] }>;
@@ -173,9 +176,14 @@ export function compareDecisionBases(input: ClarificationState, decisionId: stri
 /** Compare already validated preserved records, including a focused read-only packet archive. */
 export function compareDecisionBasisRecords(state: ClarificationHistory, decisionId: string, fromEventId: string, toEventId: string): BasisComparison {
   const from = decisionBasisAtRecords(state, decisionId, fromEventId), to = decisionBasisAtRecords(state, decisionId, toEventId);
+  return compareDecisionBasisInspections(state, from, to);
+}
+
+/** Compare validated endpoint cuts; later `.latest` snapshots never supply endpoint facts. */
+export function compareDecisionBasisInspections(state: ClarificationHistory, from: BasisInspection, to: BasisInspection): BasisComparison {
   const addedEventIds = difference(to.includedEventIds, from.includedEventIds), removedEventIds = difference(from.includedEventIds, to.includedEventIds);
   if (addedEventIds.length > 0 && removedEventIds.length > 0) throw new RangeError("The selected recorded endpoints have non-nested causal cuts. Their before/after direction cannot be established; select endpoints with a proven inclusive order. No history was changed.");
   const direction = addedEventIds.length > 0 ? "forward" : removedEventIds.length > 0 ? "backward" : "same";
   const receiptContexts = { from: basisReceiptContextsFromRecords(state, from), to: basisReceiptContextsFromRecords(state, to) };
-  return { from, to, direction, addedEventIds, removedEventIds, changedFacts: changedFacts(endpointFacts(state, from), endpointFacts(state, to)), recordChanges: recordChanges(from.historical, to.historical), preservedOriginalRules: originalRules(from.historical), ruleVersionStatus: "unrecorded", receiptContexts, receiptChanges: compareReceiptContexts(receiptContexts.from, receiptContexts.to) };
+  return { from, to, direction, addedEventIds, removedEventIds, changedFacts: changedFacts(endpointFacts(state, from), endpointFacts(state, to)), recordChanges: recordChanges(from.historical, to.historical), preservedOriginalRules: originalRules(from.historical), ruleVersionStatus: "unrecorded", receiptContexts, receiptChanges: compareReceiptContexts(receiptContexts.from, receiptContexts.to), clarificationContexts: null, clarificationChanges: [] };
 }

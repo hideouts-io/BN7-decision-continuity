@@ -36,6 +36,11 @@ export function decisionBasisAt(input: ClarificationState, decisionId: string, e
 /** Reuse the causal inspector only after a packet or operational history has validated its records. */
 export function decisionBasisAtRecords(state: ClarificationHistory, decisionId: string, eventId: string): BasisInspection {
   const events = decisionBasisEventsFromRecords(state, decisionId);
+  return decisionBasisAtEvents(state, decisionId, eventId, events);
+}
+
+/** Validated callers may supply a combined causal graph; only its included history records form the snapshot. */
+export function decisionBasisAtEvents(state: ClarificationHistory, decisionId: string, eventId: string, events: readonly BasisEvent[]): BasisInspection {
   const ancestors = eventAncestors(events);
   const latest = snapshot(state, decisionId);
   if (eventId === "latest") return { event: null, historical: latest, latest, includedEventIds: events.map((event): string => event.id), excludedEventIds: [] };
