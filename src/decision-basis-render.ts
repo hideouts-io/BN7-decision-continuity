@@ -83,7 +83,7 @@ function pendingReview(state: ClarificationState, snapshot: BasisSnapshot, prefi
 }
 
 function reviewHistory(snapshot: BasisSnapshot, prefix: BasisColumn): string {
-  return `<details class="basis-block" data-testid="${prefix}-reviews"><summary>Recorded reviews · ${snapshot.reviews.length}</summary>${snapshot.reviews.length === 0 ? "<p>No review recorded.</p>" : `<ol class="basis-records">${snapshot.reviews.map((review): string => `<li data-review-id="${escapeHtml(review.id)}"><strong>${escapeHtml(review.id)}</strong>${facts(`${prefix}-review-${review.id}`, [
+  return `<details class="basis-block" data-testid="${prefix}-reviews"><summary>Recorded reviews · ${snapshot.reviews.length}</summary>${snapshot.reviews.length === 0 ? "<p>No review recorded.</p>" : `<ol class="basis-records">${snapshot.reviews.map((review): string => `<li id="${prefix}-review-${review.id}" data-review-id="${escapeHtml(review.id)}"><strong>${escapeHtml(review.id)}</strong>${facts(`${prefix}-review-${review.id}`, [
     ["actor", "Assigned fictional code", review.actor], ["opened-at", "Opened · UTC", review.openedAt],
     ["trigger", "Recorded trigger", review.trigger], ["basis", "Frozen basis revision", review.basis.revision],
     ["scope", "Frozen decision scope", review.basis.statement], ["target", "Frozen source event / evidence", `${review.sourceEventId} / ${review.evidenceId}`],
@@ -91,7 +91,7 @@ function reviewHistory(snapshot: BasisSnapshot, prefix: BasisColumn): string {
 }
 
 function outcomeHistory(snapshot: BasisSnapshot, prefix: BasisColumn): string {
-  return `<details class="basis-block" id="${prefix}-outcomes" data-testid="${prefix}-outcomes"><summary>Recorded outcomes · ${snapshot.outcomes.length}</summary>${snapshot.outcomes.length === 0 ? "<p>No outcome recorded.</p>" : `<ol class="basis-records">${snapshot.outcomes.map((outcome): string => `<li data-outcome-id="${escapeHtml(outcome.id)}"><strong>${escapeHtml(outcomeLabel(outcome.outcome))}</strong>${facts(`${prefix}-outcome-${outcome.id}`, [
+  return `<details class="basis-block" id="${prefix}-outcomes" data-testid="${prefix}-outcomes"><summary>Recorded outcomes · ${snapshot.outcomes.length}</summary>${snapshot.outcomes.length === 0 ? "<p>No outcome recorded.</p>" : `<ol class="basis-records">${snapshot.outcomes.map((outcome): string => `<li id="${prefix}-outcome-${outcome.id}" data-outcome-id="${escapeHtml(outcome.id)}"><strong>${escapeHtml(outcomeLabel(outcome.outcome))}</strong>${facts(`${prefix}-outcome-${outcome.id}`, [
     ["id", "Outcome UUID", outcome.id], ["revision", "Recorded outcome revision", outcome.revision],
     ["actor", "Responsible fictional code", outcome.actor], ["recorded-at", "Recorded · UTC", outcome.recordedAt],
     ["rationale", "Recorded rationale", outcome.rationale], ["scope", "Resulting scope or interim action", outcome.statement],
@@ -101,7 +101,7 @@ function outcomeHistory(snapshot: BasisSnapshot, prefix: BasisColumn): string {
 }
 
 function replacementHistory(snapshot: BasisSnapshot, prefix: BasisColumn): string {
-  return `<details class="basis-block" id="${prefix}-replacements" data-testid="${prefix}-replacements"><summary>Explicit review replacements · ${snapshot.replacements.length}</summary>${snapshot.replacements.length === 0 ? "<p>No replacement recorded.</p>" : `<ol class="basis-records">${snapshot.replacements.map((replacement): string => `<li data-replacement-id="${escapeHtml(replacement.id)}"><strong>Old question preserved · new review opened</strong>${facts(`${prefix}-replacement-${replacement.id}`, [
+  return `<details class="basis-block" id="${prefix}-replacements" data-testid="${prefix}-replacements"><summary>Explicit review replacements · ${snapshot.replacements.length}</summary>${snapshot.replacements.length === 0 ? "<p>No replacement recorded.</p>" : `<ol class="basis-records">${snapshot.replacements.map((replacement): string => `<li id="${prefix}-replacement-${replacement.id}" data-replacement-id="${escapeHtml(replacement.id)}"><strong>Old question preserved · new review opened</strong>${facts(`${prefix}-replacement-${replacement.id}`, [
     ["id", "Replacement UUID", replacement.id], ["actor", "Responsible fictional code", replacement.actor],
     ["recorded-at", "Recorded · UTC", replacement.recordedAt], ["rationale", "Recorded rationale", replacement.rationale],
     ["old-review", "Old review", replacement.oldReviewId], ["new-review", "New review", replacement.newReviewId],
@@ -116,27 +116,9 @@ export function basisSnapshotMarkup(state: ClarificationState, snapshot: BasisSn
   return `<h3>${escapeHtml(heading)}</h3><p class="basis-decision-title">${escapeHtml(snapshot.record.decision.title)}</p>${activeBasis(snapshot, prefix)}${original(snapshot, prefix)}${supportingEvidence(snapshot, prefix)}<section class="basis-block" id="${prefix}-known-source" data-testid="${prefix}-known-source"><h4>Latest capture known in this recorded state</h4>${captureFacts(`${prefix}-known-source`, snapshot.knownSource)}<p class="basis-note">Requested access and declared grants are separate. Deployment is declared; runtime is Not observed.</p></section>${pendingReview(state, snapshot, prefix)}${reviewHistory(snapshot, prefix)}${outcomeHistory(snapshot, prefix)}${replacementHistory(snapshot, prefix)}`;
 }
 
-/** Compare stored facts, without turning either snapshot into an impact verdict. */
-export function basisDifferencesMarkup(inspection: BasisInspection): string {
-  const historical = inspection.historical, latest = inspection.latest;
-  const entries: readonly (readonly [string, string, string])[] = [
-    ["Active revision", historical.basis?.revision ?? "Withdrawn", latest.basis?.revision ?? "Withdrawn"],
-    ["Decision scope", historical.basis?.statement ?? "No active basis", latest.basis?.statement ?? "No active basis"],
-    ["Responsible fictional code", historical.basis?.actor ?? "No active basis", latest.basis?.actor ?? "No active basis"],
-    ["Recorded rationale", historical.basis?.rationale ?? "No active basis", latest.basis?.rationale ?? "No active basis"],
-    ["Accepted boundary", historical.basis?.acceptedPermissions.join(", ") ?? "No active basis", latest.basis?.acceptedPermissions.join(", ") ?? "No active basis"],
-    ["Supporting evidence", historical.support?.evidence.id ?? "No active basis", latest.support?.evidence.id ?? "No active basis"],
-    ["Latest known evidence", historical.knownSource.evidence.id, latest.knownSource.evidence.id],
-    ["Known requested access", historical.knownSource.evidence.requestedPermissions.join(", "), latest.knownSource.evidence.requestedPermissions.join(", ")],
-    ["Known declared grants", historical.knownSource.evidence.grantedPermissions.join(", "), latest.knownSource.evidence.grantedPermissions.join(", ")],
-    ["Known deployment declaration", historical.knownSource.evidence.environment, latest.knownSource.evidence.environment],
-    ["Known capture time · UTC", historical.knownSource.evidence.capturedAt, latest.knownSource.evidence.capturedAt],
-    ["Known source record time · UTC", historical.knownSource.recordedAt, latest.knownSource.recordedAt],
-    ["Pending review", historical.pendingReview?.id ?? "None", latest.pendingReview?.id ?? "None"],
-    ["Pending frozen target evidence", historical.pendingReview?.evidenceId ?? "None", latest.pendingReview?.evidenceId ?? "None"],
-    ["Recorded outcomes", String(historical.outcomes.length), String(latest.outcomes.length)],
-    ["Review replacements", String(historical.replacements.length), String(latest.replacements.length)],
-  ];
-  const changed = entries.filter(([, before, after]): boolean => before !== after);
-  return `<h3>What differs from the latest recorded state?</h3>${changed.length === 0 ? "<p>The displayed basis, evidence, pending review and record counts match the latest recorded state.</p>" : `<dl class="basis-differences-list">${changed.map(([label, before, after]): string => `<div><dt>${escapeHtml(label)}</dt><dd><span><small>Selected state</small>${escapeHtml(before)}</span><span><small>Latest recorded state</small>${escapeHtml(after)}</span></dd></div>`).join("")}</dl>`}<details class="basis-cut-details"><summary>Exact event cut · ${inspection.includedEventIds.length} included / ${inspection.excludedEventIds.length} excluded</summary>${facts("basis-cut", [["included", "Included event UUIDs", inspection.includedEventIds.join(", ")], ["excluded", "Excluded event UUIDs", inspection.excludedEventIds.length === 0 ? "None" : inspection.excludedEventIds.join(", ")]])}</details><p class="basis-note">These are recorded facts. Historical rule evaluation is unavailable because rule versions were not recorded. No approval, safety or runtime conclusion is inferred.</p>`;
+/** Expose exact captures inside this selected cut, including earlier support no longer active. */
+export function basisCapturesMarkup(state: ClarificationState, inspection: BasisInspection, prefix: BasisColumn): string {
+  const included = new Set(inspection.includedEventIds);
+  const captures = state.sources.filter((capture): boolean => included.has(capture.id));
+  return `<details class="basis-block" data-testid="${prefix}-captures"><summary>Exact source captures in this recorded perspective · ${captures.length}</summary>${captures.map((capture): string => `<article id="${prefix}-capture-${capture.id}" class="basis-block" data-basis-source-id="${escapeHtml(capture.evidence.sourceId)}" data-basis-source-event-id="${escapeHtml(capture.id)}" data-basis-evidence-id="${escapeHtml(capture.evidence.id)}"><h4>Preserved capture · ${escapeHtml(capture.id)}</h4>${captureFacts(`${prefix}-capture-${capture.id}`, capture)}</article>`).join("")}</details>`;
 }

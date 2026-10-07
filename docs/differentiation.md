@@ -34,6 +34,8 @@ Broader governance products already overlap materially. [IBM watsonx.governance]
 
 HID-14 implements a read-only basis inspector for one v6 decision immediately after a selected recorded event. It derives a causal partial order from validated references, array append order and recorded times. Original creation and replacement/new-review pairs are atomic. Causally ordered equal-time events are inspectable; incomparable equal-time cuts, cycles and histories above 256 relevant events fail explicitly. Capture time does not establish recording order. Historical rule implementation versions are unavailable; the inspector reconstructs recorded facts rather than applying current rules to old evidence. See the README for the canonical contract and verification.md for actual results.
 
+HID-16 extends that contract to two independently selected perspectives. Facts and membership differences cite the exact selected records; reversed comparisons are explicitly labeled and do not remove stored history. Unavailable endpoints remain unavailable, while a valid requested opposite perspective remains visible. This is a deterministic record explanation, with no AI service or reconstructed historical rule execution. Practitioner comprehension and effort savings remain to be measured.
+
 The differentiating combination under investigation is attributable source versions, independently scoped dependencies, explicit uncertainty, responsible clarification replacement and reconstructible frozen review context. Each component has precedents. No verified claim of uniqueness or groundbreaking performance follows from their combination.
 
 ## Ranked capability hypotheses

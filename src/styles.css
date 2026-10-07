@@ -30,6 +30,7 @@
 .basis-panel { border-top: 2px solid var(--accent-line); }
 .basis-controls { margin-top: 22px; }
 .basis-controls .form-field { min-width: 0; margin-bottom: 0; }
+.basis-controls .basis-decision-control { grid-column: 1 / -1; }
 .basis-panel > .basis-note { margin: 15px 0 20px; }
 .basis-columns { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; align-items: start; }
 .basis-snapshot { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel2); }
@@ -59,11 +60,28 @@
 .basis-differences-list > div { display: grid; grid-template-columns: minmax(125px,.45fr) minmax(0,1.55fr); gap: 18px; padding: 13px 0; border-bottom: 1px solid var(--line-soft); }
 .basis-differences-list dt { color: var(--accent-strong); }
 .basis-differences-list dd { min-width: 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; margin: 0; color: var(--soft); }
-.basis-differences-list dd span { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.basis-value { min-width: 0; overflow-wrap: anywhere; }
+.basis-value-text { margin: 0; white-space: pre-wrap; }
 .basis-differences-list small { display: block; color: var(--muted); margin-bottom: 6px; font-size: 10px; }
 .basis-cut-details { margin-top: 15px; }
+.basis-comparison-summary { margin-bottom: 18px; padding: 16px; border: 1px solid var(--accent-line); border-radius: 10px; background: var(--accent-soft); overflow-wrap: anywhere; }
+.basis-comparison-summary h3 { margin: 0 0 8px; }
+.basis-comparison-summary p { margin: 0; color: var(--soft); font-size: 12px; }
+.basis-endpoint-cuts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; margin: 18px 0; }
+.basis-endpoint-cuts > * { min-width: 0; margin-top: 0; }
+.basis-difference-references { grid-column: 1 / -1; padding-top: 8px; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+.basis-difference-references > summary { min-height: 44px; padding: 8px 0; line-height: 1.7; color: var(--accent-strong); cursor: pointer; }
+.basis-reference { display: block; max-width: 100%; min-height: 28px; padding: 3px 0; border: 0; background: transparent; color: var(--accent); font: inherit; line-height: 1.8; text-align: left; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.basis-record-changes { min-width: 0; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.basis-record-changes h4 { margin: 18px 0 10px; color: var(--accent-strong); font-size: 13px; }
+.basis-record-changes p { font-size: 12px; color: var(--muted); }
+.basis-record-changes :where(ol, ul) { min-width: 0; padding-left: 20px; }
+.basis-record-changes li { min-width: 0; padding: 14px 0; border-bottom: 1px solid var(--line-soft); }
+.basis-record-changes li:last-child { border-bottom: 0; }
+.basis-record-changes :where(code, a, strong, dd) { overflow-wrap: anywhere; }
 @media (max-width: 860px) {
   .basis-columns { grid-template-columns: 1fr; }
+  .basis-endpoint-cuts { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .basis-controls { grid-template-columns: 1fr; gap: 15px; }

@@ -19,13 +19,13 @@ const initialStatement: string = "Synthetic production request scope accepts rea
 const finalStatement: string = "Synthetic production request scope now accepts read, write and delete for the separately reviewed clarified capture.";
 const capturedMarkup: string = "Synthetic source note: <img src=x onerror=alert(1)> remains captured text; runtime activity is Not observed.";
 const futureNote: string = "Synthetic later Production declaration adds delete; this text must not appear in the earlier Unknown view.";
-type BasisFixture = Readonly<{
+export type BasisFixture = Readonly<{
   state: ClarificationState; decisionId: string; baselineId: string; firstCaptureId: string; firstEvidenceId: string;
   firstReviewId: string; firstOutcomeId: string; unknownCaptureId: string; unknownReviewId: string; deferralId: string;
   clarifiedCaptureId: string; replacementId: string; replacementReviewId: string; finalOutcomeId: string;
 }>;
-type TiedFixture = Readonly<{ state: ClarificationState; decisionId: string; captureId: string; reviewId: string; outcomeId: string }>;
-type AmbiguousFixture = Readonly<{ state: ClarificationState; reversed: ClarificationState; decisionId: string; captureId: string; outcomeId: string }>;
+export type TiedFixture = Readonly<{ state: ClarificationState; decisionId: string; captureId: string; reviewId: string; outcomeId: string }>;
+export type AmbiguousFixture = Readonly<{ state: ClarificationState; reversed: ClarificationState; decisionId: string; captureId: string; outcomeId: string }>;
 
 function uuid(index: number): string { return z.uuid().parse(`00000000-0000-4000-8000-${index.toString(16).padStart(12, "0")}`); }
 function time(seconds: number): string { return new Date(Date.parse("2026-10-06T00:00:00.000Z") + seconds * 1000).toISOString(); }
@@ -43,7 +43,7 @@ function deferred(): SharedOutcomeInput {
 }
 
 /** A resolved revision precedes the Unknown review; clarification must preserve that revision rather than restore revision 1. */
-function basisFixture(): BasisFixture {
+export function basisFixture(): BasisFixture {
   const ids = creationIds(100), decisionId = ids.decisions[2];
   const baseline = createClarificationState(actor, ids, time(0));
   const first = appendClarificationEvidence(baseline, evidence(time(1), ["documents:read", "documents:write"], "Production", capturedMarkup), uuid(110), uuid(111), time(2));
@@ -57,7 +57,7 @@ function basisFixture(): BasisFixture {
   const state = appendClarificationOutcome(replacement, decisionId, revised(finalStatement, ["documents:read", "documents:write", "documents:delete"]), uuid(122), time(12));
   return { state, decisionId, baselineId: ids.event, firstCaptureId: uuid(110), firstEvidenceId: uuid(111), firstReviewId: uuid(112), firstOutcomeId: uuid(113), unknownCaptureId: uuid(114), unknownReviewId: uuid(116), deferralId: uuid(117), clarifiedCaptureId: uuid(118), replacementId: uuid(120), replacementReviewId: uuid(121), finalOutcomeId: uuid(122) };
 }
-function tiedFixture(): TiedFixture {
+export function tiedFixture(): TiedFixture {
   const ids = creationIds(200), decisionId = ids.decisions[0];
   const baseline = createClarificationState(actor, ids, time(0));
   const capture = appendClarificationEvidence(baseline, evidence(time(1), ["documents:read", "documents:write"], "Unknown", "Synthetic same-millisecond capture with an exact dependent review and resolution."), uuid(210), uuid(211), time(1));
@@ -65,7 +65,7 @@ function tiedFixture(): TiedFixture {
   const state = appendClarificationOutcome(review, decisionId, revised("Synthetic request scope accepts read and write for this exact captured boundary; deployment and runtime remain unobserved.", ["documents:read", "documents:write"]), uuid(213), time(1));
   return { state, decisionId, captureId: uuid(210), reviewId: uuid(212), outcomeId: uuid(213) };
 }
-function ambiguousFixture(): AmbiguousFixture {
+export function ambiguousFixture(): AmbiguousFixture {
   const ids = creationIds(300), decisionId = ids.decisions[0];
   const baseline = createClarificationState(actor, ids, time(0));
   const capture = appendClarificationEvidence(baseline, evidence(time(1), ["documents:read", "documents:write"], "Unknown", "Synthetic original target for independent equal-time capture and outcome operations."), uuid(310), uuid(311), time(1));
