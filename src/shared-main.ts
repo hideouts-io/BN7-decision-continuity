@@ -19,6 +19,7 @@ import { connectRecovery } from "./recovery-ui.ts";
 import { urlForSession } from "./sessions.ts";
 import { OutcomeSchema } from "./scenario.ts";
 import { outcomeExplanation } from "./journey.ts";
+import { renderWorkspaceAttention } from "./workspace-attention.ts";
 
 function field(id: string): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement {
   const element = getElement(id);
@@ -102,6 +103,7 @@ function refreshReview(): void {
 }
 function show(next: SharedWorkspace): void {
   renderSharedState(next);
+  renderWorkspaceAttention(next);
   if (next.schemaVersion === 6) renderClarificationHistory(next);
   refreshDecisionBasis(next.schemaVersion === 6 ? next : null);
   const selection = field("shared-review-decision"), previous: string = selection.value;
@@ -132,11 +134,11 @@ function save(next: SharedWorkspace, message: string): void {
 try {
   if (selectedFormat !== null && selectedFormat !== "6") throw new RangeError("Shared impact accepts the original v5 route or explicit format=6 only. No record was migrated.");
   if (selectedFormat === "6") {
-    getElement("page-title").innerHTML = "What can we<br /><span>reassess now?</span>";
+    getElement("page-title").innerHTML = "Does this decision<br /><span>still hold?</span>";
     getElement("shared-scope-label").textContent = "Clarified review rehearsal · v6";
     getElement("clarification-introduction").hidden = false;
     getElement("clarification-start").hidden = true;
-    document.title = "BN7 | Reassessment after clarification";
+    document.title = "Decision workspace · Decision Continuity";
     const newLink = getElement("shared-new");
     if (!(newLink instanceof HTMLAnchorElement)) throw new TypeError("New rehearsal must be a link.");
     newLink.href = `${appPath("impact.html")}?format=6`;
@@ -182,6 +184,24 @@ try {
     inspectSharedNode(current(), { kind: z.enum(["source", "evidence", "assumption", "decision", "review", "outcome"]).parse(button.dataset.trailKind), id: z.uuid().parse(button.dataset.trailId) });
     if (state?.schemaVersion === 6 && button.dataset.trailKind === "review") annotateClarificationReview(state, z.uuid().parse(button.dataset.trailId));
     getElement("shared-inspector").focus();
+  }));
+  getElement("workspace-attention").addEventListener("click", (event: MouseEvent): void => action((): void => {
+    if (!(event.target instanceof Element)) throw new TypeError("Attention interaction requires a DOM element.");
+    const button = event.target.closest<HTMLButtonElement>("button[data-attention-decision], button[data-attention-review]");
+    if (button === null) return;
+    const id = z.uuid().parse(button.dataset.attentionDecision ?? button.dataset.attentionReview);
+    sharedDecision(current(), id);
+    if (button.dataset.attentionDecision !== undefined) {
+      inspectSharedNode(current(), { kind: "decision", id });
+      getElement("shared-inspector").focus();
+    } else {
+      if (field("shared-review-decision").value !== id) {
+        field("shared-review-decision").value = id;
+        form("shared-outcome-form").reset();
+        refreshReview();
+      }
+      getElement("shared-review-section").focus();
+    }
   }));
   field("shared-review-decision").addEventListener("change", (): void => action((): void => { form("shared-outcome-form").reset(); refreshReview(); }));
   getElement("shared-open-review").addEventListener("click", (): void => action((): void => {

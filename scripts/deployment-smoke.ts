@@ -8,11 +8,12 @@ import { checkDecisionContinuity } from "./continuity-smoke.ts";
 import { checkSharedSource } from "./shared-smoke.ts";
 import { checkReviewClarification } from "./clarification-smoke.ts";
 import { checkDecisionBasis } from "./basis-smoke.ts";
+import { checkWorkspaceFoundation } from "./workspace-smoke.ts";
 import { fillCreation } from "./authored-smoke.ts";
 
 const target = new URL(z.string().parse(process.argv[2]));
-if (!target.pathname.endsWith("/bridgenode7/decision-continuity/") || target.search !== "" || target.hash !== "") {
-  throw new RangeError("Pass the explicit application directory URL ending /bridgenode7/decision-continuity/, without query or fragment");
+if (!target.pathname.endsWith("/decision-continuity/") || target.search !== "" || target.hash !== "") {
+  throw new RangeError("Pass the explicit application directory URL ending /decision-continuity/, without query or fragment. A legacy parent directory is also supported.");
 }
 const url = target.href.slice(0, -1);
 async function download(page: Page, id: string): Promise<string> {
@@ -80,5 +81,6 @@ try {
   await checkSharedSource(browser, url);
   await checkReviewClarification(browser, url);
   await checkDecisionBasis(browser, url);
+  await checkWorkspaceFoundation(browser, url);
   console.log("decision_continuity_deployment_smoke_passed", { url: target.href, assets: true, allSixFormats: true, recoveryRouting: true, completeReassessment: true, recordedDecisionBasis: true, keyboardMobileAccessibility: true, syntheticOnly: true });
 } finally { await browser.close(); }

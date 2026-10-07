@@ -1,9 +1,11 @@
 {
-  "name": "bn7-decision-continuity",
+  "name": "decision-continuity",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.18.0" },
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
     "check": "tsc --noEmit",
@@ -13,7 +15,9 @@
     "prepare:critique": "node scripts/prepare-critique.ts",
     "browser": "playwright-cli"
   },
-  "dependencies": { "zod": "4.6.5" },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
     "@playwright/cli": "0.1.22",

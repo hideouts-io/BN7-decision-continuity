@@ -6,6 +6,6 @@
 - Use public or synthetic evidence for the initial prototype. Do not add secrets, confidential assessments, private correspondence, or personal data to this public repository.
 - Preserve source attribution, evidence versions, applicability, assumptions, and uncertainty. Distinguish requested permissions, granted permissions, and observed behavior.
 - Require a responsible human and recorded rationale for consequential review outcomes. Preserve prior decision versions when recording a new outcome.
-- Use the design reference and source attribution in README.md. The user authorized copying the BN7 visual style; main-site deployment remains a later milestone.
-- Keep Linear as the intended product work register; do not duplicate issues in a separate local task register. Research records remain in their existing authoritative repositories.
+- Decision Continuity has an independent product identity and original visual system documented in README.md. Preserve archived source attribution and existing storage namespaces as compatibility/provenance, not product affiliation. External repository, tracking and hosting migration requires separate authorization.
+- Keep Linear authoritative for execution and issue status. TODO.md is the compact milestone/continuation index linking those issues, not a competing task register. Research records remain in their existing authoritative repositories.
 - Reviewer research is authorized. Sending outreach, changing production settings, and deployment require a direct user request.

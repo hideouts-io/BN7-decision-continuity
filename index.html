@@ -3,39 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#050914" />
+    <meta name="theme-color" content="#f4f3ef" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="description" content="A synthetic Decision Continuity walkthrough: trace changed evidence to an accountable human review." />
-    <title>BN7 | Decision Continuity</title>
+    <title>Guided example · Decision Continuity</title>
     <link rel="stylesheet" href="./design/brand.css" />
     <link rel="stylesheet" href="./src/styles.css" />
     <script type="module" src="./src/main.ts"></script>
   </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to decision workspace</a>
-    <header class="site-header">
-      <div class="shell header-inner">
-        <a class="identity" href="#main" aria-label="Bridge Node 7 Decision Continuity workspace">
-          <span class="mark" aria-hidden="true"><span>7</span></span>
-          <span class="identity-text"><span class="brand-name">Bridge Node 7</span><span class="product-name">Decision Continuity</span></span>
-        </a>
-        <nav class="header-nav" aria-label="Workspace sections">
-          <a href="./decisions.html" data-testid="your-decisions">Your decisions</a>
-          <a href="./impact.html" data-testid="shared-impact">Shared impact</a>
-          <a href="#evidence">Evidence</a>
-          <a href="#review">Review</a>
-          <a href="#decision-history">History</a>
-        </nav>
-        <span class="environment-label"><span aria-hidden="true" class="environment-dot"></span>Local demonstration</span>
-      </div>
-    </header>
+  <body class="app-shell">
+    <a class="skip-link" href="#main">Skip to guided example</a>
+    <aside class="app-sidebar" aria-label="Application navigation">
+      <a class="app-identity" href="./impact.html?format=6" aria-label="Decision Continuity workspace"><span class="continuity-mark" aria-hidden="true"></span><span class="app-identity-copy"><strong>Decision Continuity</strong><small>Evidence. Reasoning. Reassessment.</small></span></a>
+      <p class="nav-caption">Workspaces</p>
+      <nav class="app-route-nav" aria-label="Choose a workspace">
+        <a id="nav-workspace" data-testid="nav-workspace" href="./impact.html?format=6"><span class="nav-symbol" aria-hidden="true">◈</span><span>Decision workspace<small>Shared evidence &amp; reassessment</small></span></a>
+        <a id="nav-single" data-testid="nav-single" href="./decisions.html?format=4"><span class="nav-symbol" aria-hidden="true">□</span><span>Single decision<small>Write your original basis</small></span></a>
+        <a id="nav-guided" data-testid="nav-guided" href="./" aria-current="page"><span class="nav-symbol" aria-hidden="true">↗</span><span>Guided example<small>Learn with a complete case</small></span></a>
+      </nav>
+      <p class="nav-caption">In this workspace</p>
+      <nav class="app-section-nav" aria-label="Workspace sections">
+          <a href="#decision" data-workspace-section="decision" data-testid="nav-decision"><span aria-hidden="true">01</span>Decision basis</a>
+          <a href="#evidence" data-workspace-section="evidence" data-testid="nav-evidence"><span aria-hidden="true">02</span>Evidence comparison</a>
+          <a href="#impact" data-workspace-section="impact" data-testid="nav-impact"><span aria-hidden="true">03</span>Dependency path</a>
+          <a href="#review" data-workspace-section="review" data-testid="nav-review"><span aria-hidden="true">04</span>Human review</a>
+          <a href="#decision-history" data-workspace-section="decision-history" data-testid="nav-decision-history"><span aria-hidden="true">05</span>History & export</a>
+          <a href="#recovery-section" data-workspace-section="recovery-section" data-testid="nav-recovery-section"><span aria-hidden="true">06</span>Import a history</a>
+      </nav>
+      <div class="compatibility-nav"><p class="nav-caption">Earlier workflows</p><nav aria-label="Compatible earlier workflows"><a href="./decisions.html" data-testid="your-decisions">Single capture · v3</a><a id="nav-legacy" href="./impact.html" data-testid="shared-impact">Shared source · v5</a></nav></div>
+      <div class="app-sidebar-footer"><p class="app-environment"><span class="environment-dot" aria-hidden="true"></span>Local · synthetic</p><p>Your browser holds this history. Export a copy to keep or transfer it.</p><span class="capability-note">No cloud account, live source connection or AI service.</span></div>
+    </aside>
+    <div class="app-content">
 
     <p id="app-loading" data-testid="app-loading" class="shell" role="status">Loading Decision Continuity…</p>
     <noscript><p class="shell">Enable JavaScript to use this interactive demonstration.</p></noscript>
-    <main inert id="main" class="shell" tabindex="-1">
+    <main inert id="main" class="app-main shell" tabindex="-1">
+      <section class="intro workspace-intro" aria-labelledby="page-title">
+        <div class="intro-copy"><p class="workspace-kicker">Guided example <span>Start here</span></p><h1 id="page-title" class="workspace-title">Follow the change.<br /><span>Keep the reasoning.</span></h1><p class="intro-description">Does our earlier decision still hold—and exactly what changed? Work through one fictional assistant approval, from a changed request to a recorded human outcome.</p><div class="intro-metadata"><span>One decision</span><span>Explicit dependency</span><span>Preserved history</span></div></div>
+        <aside class="scenario-note" aria-label="Example scenario"><span class="scope-label">Your first case</span><h2>A read-only assistant asks for write access.</h2><p>Compare the unchanged control first. Then inspect the new request, follow its dependency, and choose an outcome. A request does not prove access was granted or used.</p><span class="scenario-reference">DC-001 · Synthetic AI assurance case</span></aside>
+      </section>
       <section class="session-bar" aria-label="Local demo sessions">
         <div class="session-picker">
-          <label for="session-select">Demo session</label>
+          <label for="session-select">Saved example</label>
           <select id="session-select" data-testid="session-select" aria-describedby="session-hint"></select>
         </div>
         <button id="new-session" data-testid="new-session" class="btn secondary compact" type="button">New session<span aria-hidden="true">＋</span></button>
@@ -43,7 +52,7 @@
         <span id="session-id" data-testid="session-id" class="session-identity">Loading local synthetic session</span>
         <p id="session-hint" class="session-hint">A new session keeps earlier history. A session link selects a record stored in this browser; it does not share the record remotely.</p>
       </section>
-      <details class="recovery-panel panel" data-testid="import-panel">
+      <details id="recovery-section" class="recovery-panel panel" data-testid="import-panel" tabindex="-1">
         <summary data-testid="import-toggle">Import history <span>Restore a saved synthetic session</span></summary>
         <p id="import-hint">Choose an exported JSON file, inspect its summary, then confirm. Maximum 1 MiB. Files stay in this browser; nothing is uploaded. Existing history cannot be overwritten. A session link alone does not transfer data.</p>
         <form id="import-form" data-testid="import-form">
@@ -58,19 +67,7 @@
           <button id="confirm-import" data-testid="confirm-import" class="btn primary compact" type="button" disabled>Restore &amp; open session</button>
         </div>
       </details>
-      <section class="intro" aria-labelledby="page-title">
-        <div class="intro-copy">
-          <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>Evidence → accountable decisions</p>
-          <h1 id="page-title">When evidence changes,<br /><span>know what to review.</span></h1>
-          <p class="intro-description">Compare a source change. Follow the assumption it affects. Record a human outcome while keeping the original reasoning in view.</p>
-        </div>
-        <aside class="scenario-note" aria-label="Demonstration scope">
-          <span class="scope-label">Synthetic demonstration</span>
-          <h2>A read-only assistant<br />requests write access.</h2>
-          <p>Explore one fictional case. A new request is a reason to review; it does not prove access was granted or used.</p>
-          <span class="scenario-reference">Scenario DC-001 · AI assurance</span>
-        </aside>
-      </section>
+
 
       <section class="journey-card panel" aria-labelledby="journey-title">
         <div class="journey-copy"><p id="journey-status" class="eyebrow">Your next step</p><h2 id="journey-title">Start with the source comparison.</h2><p id="journey-description">Load the unchanged control first, then compare the new write-access request.</p></div>
@@ -123,7 +120,7 @@
         </div>
         <article id="version-entry" class="version-entry panel" aria-labelledby="version-heading" hidden>
           <div class="card-heading"><div><span class="field-label">Manual synthetic capture · SRC-001</span><h3 id="version-heading">Give the comparison your own version.</h3></div><span id="version-status" data-testid="version-status" class="badge">No version recorded</span></div>
-          <p id="version-guidance" class="section-lede">Record one fictional Atlas manifest. Requested access and declared grants are independent; runtime activity remains unobserved. Use synthetic material only.</p>
+          <p id="version-guidance" class="section-lede">Record one fictional assistant manifest. Requested access and declared grants are independent; runtime activity remains unobserved. Use synthetic material only.</p>
           <form id="evidence-form" data-testid="evidence-form" class="evidence-form" hidden>
             <div class="form-field"><label for="capture-time">Synthetic capture time · UTC <span class="required-label">Required</span></label><input id="capture-time" data-testid="capture-time" name="capturedAt" type="datetime-local" required min="2026-09-28T15:00" aria-describedby="capture-hint" /><small id="capture-hint">At or after the original capture, before the time you record this version. The entered time is interpreted as UTC.</small></div>
             <div class="permission-inputs">
@@ -190,7 +187,7 @@
       </section>
       <aside class="storage-note" aria-label="Local storage limitations"><span class="note-symbol" aria-hidden="true">i</span><p><strong>Local-only browser storage.</strong> This demonstration stores synthetic records in this browser. There is no real authentication, shared workspace, or live source connection. Export history to retain a separate copy.</p></aside>
     </main>
+    </div>
 
-    <footer class="site-footer"><div class="shell footer-inner"><span>Bridge Node 7 <span class="footer-divider" aria-hidden="true">/</span> Decision Continuity</span><a href="https://bridgenode7.com/" target="_blank" rel="noopener noreferrer">Explore Bridge Node 7<span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div></footer>
   </body>
 </html>

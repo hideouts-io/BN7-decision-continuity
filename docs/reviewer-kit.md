@@ -72,7 +72,7 @@ The increment's hypothesis is that explicit source capture improves reassessment
 
 ## Optional decision-creation critique
 
-The **Your decisions** workspace allows a fictional approval and explanatory read-only request assumption to be created before capturing a later version. Follow its [single-review README workflow](../README.md#create-a-single-review-synthetic-decision) rather than duplicate form directions here. Ask whether someone can state a bounded approval, identify its evidence dependency, assign responsibility and reconstruct a later outcome. Observe setup time and rule/prose confusion as well as navigation. The existing prepared packet still describes Atlas; it is not a tested protocol for arbitrary decisions. Keep real participant observations blank until an actual session and retain old prepared packets as historical artifacts.
+The **Single capture · v3** under **Earlier workflows** workspace allows a fictional approval and explanatory read-only request assumption to be created before capturing a later version. Follow its [single-review README workflow](../README.md#create-a-single-review-synthetic-decision) rather than duplicate form directions here. Ask whether someone can state a bounded approval, identify its evidence dependency, assign responsibility and reconstruct a later outcome. Observe setup time and rule/prose confusion as well as navigation. The existing prepared packet still describes Atlas; it is not a tested protocol for arbitrary decisions. Keep real participant observations blank until an actual session and retain old prepared packets as historical artifacts.
 
 Automated v3 creation, control comparisons and recovery verify technical readiness only. No practitioner participation, authenticated responsibility or net maintenance benefit has been established. Outreach and external critique remain deferred.
 
@@ -125,7 +125,7 @@ Fit is a hypothesis; participation and availability remain unconfirmed. Ask for 
 - **An AI/ML security or assurance engineer, Trail of Bits.** The current [AI/ML service page](https://trailofbits.com/services/software-assurance/ai-ml/) describes AI/ML assurance work and offers a complimentary one-hour technical office-hours session with an engineer. Ask whether the permission example is a useful review trigger. Acceptance and the assigned engineer are not guaranteed; existing assessment methods may already cover the problem.
 - **An operational evaluator, Eticas.ai.** Its [evaluation process](https://www.eticas.ai/what-we-do) describes monitoring, material-change reevaluation, and evaluation history. Ask about organizational context, ownership, and misleading evidence links. Use [general contact](https://www.eticas.ai/contact-us/) for routing. Its [about page](https://www.eticas.ai/about-us/) identifies founder/CEO Gemma Galdon-Clavell, but a named operational reviewer is unverified. Existing monitoring and history capabilities overlap substantially.
 
-Start with BABL for assurance-method critique or Trail of Bits for technical critique, then seek a contrasting practitioner. These are candidate routes, not BN7 partnerships.
+Start with an appropriate working assessor if participation is later authorized, then seek a contrasting practitioner. These are optional candidate routes, not product partnerships or a requirement to buy consulting services.
 
 ## Invitation draft — unsent
 
@@ -133,7 +133,7 @@ Start with BABL for assurance-method critique or Trail of Bits for technical cri
 
 Hello [name/team],
 
-I am developing Decision Continuity around Bridge Node 7's evidence-to-decision approach. This early demonstration links decisions to evidence and assumptions, identifies a reason for reassessment when a source changes, and preserves a person's outcome.
+I am developing Decision Continuity as an independent application. This early demonstration links decisions to evidence and assumptions, identifies a reason for reassessment when a source changes, and preserves a person's outcome.
 
 Would an appropriate working assessor critique a 20-minute synthetic example about an assistant manifest requesting write access? We want to understand where it is useful, where it fails, and what your current process handles better.
 
@@ -142,7 +142,7 @@ Demand and operational benefits are unvalidated. We seek feedback, not endorseme
 Thank you,
 [your name and accurate role]
 
-Review your BN7 role wording before sending; visual-copy permission does not establish company representation authority.
+Use an accurate personal role before sending; this independent product does not imply company affiliation or endorsement. Sending this draft requires explicit authorization.
 
 ## Choose the next gate
 
