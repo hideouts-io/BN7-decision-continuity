@@ -5,6 +5,7 @@ import { compareDecisionBases } from "./basis-comparison.ts";
 import { basisComparisonMarkup } from "./basis-comparison-render.ts";
 import { basisCapturesMarkup, basisSnapshotMarkup } from "./decision-basis-render.ts";
 import type { BasisColumn } from "./decision-basis-render.ts";
+import { basisReceiptContexts } from "./basis-receipts.ts";
 import { escapeHtml, getElement } from "./render.ts";
 
 type Side = "from" | "to";
@@ -39,7 +40,7 @@ function snapshot(state: ClarificationState, decisionId: string, eventId: string
     element.dataset.pendingReviewId = data.pendingReview?.id ?? "";
     element.dataset.eventId = inspection.event?.id ?? "latest";
     const heading = `${side === "from" ? "From" : "To"} · ${inspection.event === null ? "latest recorded state" : `immediately after ${inspection.event.label}`}`;
-    element.innerHTML = basisSnapshotMarkup(state, data, prefix, heading) + basisCapturesMarkup(state, inspection, prefix);
+    element.innerHTML = basisSnapshotMarkup(state, data, prefix, heading, basisReceiptContexts(state, inspection)) + basisCapturesMarkup(state, inspection, prefix);
     return inspection;
   } catch (error) {
     if (!(error instanceof Error)) throw error;
@@ -115,7 +116,7 @@ export function connectDecisionBasis(): (next: ClarificationState | null) => voi
   decision.addEventListener("change", (): void => { decisionId = decision.value; render(); });
   from.addEventListener("change", (): void => { fromEventId = from.value; render(); });
   to.addEventListener("change", (): void => { toEventId = to.value; render(); });
-  getElement("basis-differences").addEventListener("click", (event: MouseEvent): void => {
+  getElement("basis-panel").addEventListener("click", (event: MouseEvent): void => {
     if (!(event.target instanceof Element)) return;
     const control = event.target.closest("button[data-basis-ref-id]");
     if (!(control instanceof HTMLButtonElement)) return;

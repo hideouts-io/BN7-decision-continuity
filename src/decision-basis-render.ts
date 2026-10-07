@@ -3,6 +3,8 @@ import type { BasisInspection, BasisSnapshot } from "./decision-basis.ts";
 import type { SharedReview } from "./shared-model.ts";
 import { outcomeLabel } from "./journey.ts";
 import { escapeHtml } from "./render.ts";
+import type { BasisReceiptContext } from "./basis-receipts.ts";
+import { basisReceiptContextsMarkup } from "./basis-receipts-render.ts";
 
 export type BasisColumn = "basis-historical" | "basis-latest";
 type SourceCapture = ClarificationState["sources"][number];
@@ -112,8 +114,8 @@ function replacementHistory(snapshot: BasisSnapshot, prefix: BasisColumn): strin
 }
 
 /** Render only preserved facts and exact references; never re-evaluate past rules. */
-export function basisSnapshotMarkup(state: ClarificationState, snapshot: BasisSnapshot, prefix: BasisColumn, heading: string): string {
-  return `<h3>${escapeHtml(heading)}</h3><p class="basis-decision-title">${escapeHtml(snapshot.record.decision.title)}</p>${activeBasis(snapshot, prefix)}${original(snapshot, prefix)}${supportingEvidence(snapshot, prefix)}<section class="basis-block" id="${prefix}-known-source" data-testid="${prefix}-known-source"><h4>Latest capture known in this recorded state</h4>${captureFacts(`${prefix}-known-source`, snapshot.knownSource)}<p class="basis-note">Requested access and declared grants are separate. Deployment is declared; runtime is Not observed.</p></section>${pendingReview(state, snapshot, prefix)}${reviewHistory(snapshot, prefix)}${outcomeHistory(snapshot, prefix)}${replacementHistory(snapshot, prefix)}`;
+export function basisSnapshotMarkup(state: ClarificationState, snapshot: BasisSnapshot, prefix: BasisColumn, heading: string, receiptContexts: readonly BasisReceiptContext[]): string {
+  return `<h3>${escapeHtml(heading)}</h3><p class="basis-decision-title">${escapeHtml(snapshot.record.decision.title)}</p>${basisReceiptContextsMarkup(receiptContexts, prefix === "basis-historical" ? "from" : "to")}${activeBasis(snapshot, prefix)}${original(snapshot, prefix)}${supportingEvidence(snapshot, prefix)}<section class="basis-block" id="${prefix}-known-source" data-testid="${prefix}-known-source"><h4>Latest capture known in this recorded state</h4>${captureFacts(`${prefix}-known-source`, snapshot.knownSource)}<p class="basis-note">Requested access and declared grants are separate. Deployment is declared; runtime is Not observed.</p></section>${pendingReview(state, snapshot, prefix)}${reviewHistory(snapshot, prefix)}${outcomeHistory(snapshot, prefix)}${replacementHistory(snapshot, prefix)}`;
 }
 
 /** Expose exact captures inside this selected cut, including earlier support no longer active. */
