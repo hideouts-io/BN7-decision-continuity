@@ -9,6 +9,7 @@ import type { ClarificationState } from "./clarification-model.ts";
 import { listClarificationIds, persistClarificationState, readClarificationState } from "./clarification-storage.ts";
 import { clarificationHistoryExport } from "./clarification-export.ts";
 import { renderClarificationHistory, annotateClarificationReview } from "./clarification-render.ts";
+import { connectDecisionBasis } from "./decision-basis-ui.ts";
 type SharedWorkspace = SharedState | ClarificationState;
 import type { ContinuityPermission } from "./continuity-model.ts";
 import { listSharedIds, persistSharedState, readSharedState } from "./shared-storage.ts";
@@ -67,6 +68,7 @@ function explainOutcome(): void {
 const storage: Storage = window.localStorage;
 let state: SharedWorkspace | null = null;
 const selectedFormat: string | null = new URL(window.location.href).searchParams.get("format");
+const refreshDecisionBasis = connectDecisionBasis();
 function current(): SharedWorkspace {
   if (state === null) throw new ReferenceError("Create or restore a shared-source rehearsal first.");
   return state;
@@ -101,6 +103,7 @@ function refreshReview(): void {
 function show(next: SharedWorkspace): void {
   renderSharedState(next);
   if (next.schemaVersion === 6) renderClarificationHistory(next);
+  refreshDecisionBasis(next.schemaVersion === 6 ? next : null);
   const selection = field("shared-review-decision"), previous: string = selection.value;
   if (!(selection instanceof HTMLSelectElement)) throw new TypeError("Decision picker must be a select.");
   selection.replaceChildren(...next.originalDecisions.map((record): HTMLOptionElement => {

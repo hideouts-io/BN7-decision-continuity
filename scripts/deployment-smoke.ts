@@ -7,6 +7,7 @@ import { z } from "zod";
 import { checkDecisionContinuity } from "./continuity-smoke.ts";
 import { checkSharedSource } from "./shared-smoke.ts";
 import { checkReviewClarification } from "./clarification-smoke.ts";
+import { checkDecisionBasis } from "./basis-smoke.ts";
 import { fillCreation } from "./authored-smoke.ts";
 
 const target = new URL(z.string().parse(process.argv[2]));
@@ -78,5 +79,6 @@ try {
   await checkDecisionContinuity(browser, url);
   await checkSharedSource(browser, url);
   await checkReviewClarification(browser, url);
-  console.log("decision_continuity_deployment_smoke_passed", { url: target.href, assets: true, allSixFormats: true, recoveryRouting: true, completeReassessment: true, keyboardMobileAccessibility: true, syntheticOnly: true });
+  await checkDecisionBasis(browser, url);
+  console.log("decision_continuity_deployment_smoke_passed", { url: target.href, assets: true, allSixFormats: true, recoveryRouting: true, completeReassessment: true, recordedDecisionBasis: true, keyboardMobileAccessibility: true, syntheticOnly: true });
 } finally { await browser.close(); }
