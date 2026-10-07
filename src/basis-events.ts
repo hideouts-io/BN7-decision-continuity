@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ClarificationStateSchema } from "./clarification-model.ts";
-import type { ClarificationState } from "./clarification-model.ts";
+import type { ClarificationState, ClarificationHistory } from "./clarification-model.ts";
 import { sharedDecision } from "./shared-model.ts";
 
 export type BasisEvent = Readonly<{
@@ -17,7 +17,7 @@ function appendLinks(ids: readonly string[]): readonly Link[] {
     return [previous, id];
   });
 }
-function reviewEventId(state: ClarificationState, id: string): string {
+function reviewEventId(state: ClarificationHistory, id: string): string {
   return state.replacements.find((event): boolean => event.newReviewId === id)?.id ?? id;
 }
 function requireEvent(events: readonly BasisEvent[], id: string): BasisEvent {
@@ -28,7 +28,12 @@ function requireEvent(events: readonly BasisEvent[], id: string): BasisEvent {
 
 /** References establish causal order; array position orders only members of that same recorded array. */
 export function decisionBasisEvents(input: ClarificationState, decisionId: string): readonly BasisEvent[] {
-  const state = ClarificationStateSchema.parse(input), record = sharedDecision(state, z.uuid().parse(decisionId));
+  return decisionBasisEventsFromRecords(ClarificationStateSchema.parse(input), decisionId);
+}
+
+/** Requires runtime-validated preserved history; packet and operational entry points validate separately. */
+export function decisionBasisEventsFromRecords(state: ClarificationHistory, decisionId: string): readonly BasisEvent[] {
+  const record = sharedDecision(state, z.uuid().parse(decisionId));
   const baseline = state.sources[0];
   if (baseline === undefined) throw new ReferenceError("Historical inspection requires the recorded baseline.");
   const reviews = state.reviews.filter((review): boolean => review.decisionId === decisionId);

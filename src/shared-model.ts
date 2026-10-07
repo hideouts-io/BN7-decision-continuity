@@ -91,15 +91,14 @@ export function sharedImpact(state: SharedHistory, record: SharedDecision, basis
   return { status: "unchanged", explanation: `${record.assumption.field === "requestedPermissions" ? "Requested access" : "Declared granted access"} ${samePermissions(previous, current) ? "is unchanged" : "changed within the accepted boundary"}. No relevant change under this explicit rule; this is not a safety or approval conclusion.` };
 }
 
-export function validateSharedHistory(state: SharedHistory, replacements: readonly ReviewReplacementLink[], context: z.RefinementCtx): void {
+/** Validate immutable records, append chronology and review semantics shared by complete workspaces and focused archives. */
+export function validateSharedRecordHistory(state: SharedHistory, replacements: readonly ReviewReplacementLink[], context: z.RefinementCtx): void {
   function require(condition: boolean, message: string): void { if (!condition) context.addIssue({ code: "custom", message }); }
   const baseline = state.sources[0];
   if (baseline === undefined) return;
   const ids: string[] = [state.id, state.source.id, ...state.originalDecisions.flatMap((record): string[] => [record.decision.id, record.assumption.id]), ...state.sources.flatMap((event): string[] => [event.id, event.evidence.id]), ...state.reviews.map((item): string => item.id), ...state.outcomes.map((item): string => item.id)];
   require(new Set(ids).size === ids.length, "All shared entities, evidence, reviews and outcomes require distinct UUIDs.");
   require(samePermissions(baseline.evidence.requestedPermissions, ["documents:read"]) && samePermissions(baseline.evidence.grantedPermissions, ["documents:read"]) && baseline.evidence.environment === "Unknown", "The synthetic baseline must preserve read-only requests, independent read-only grants and Unknown deployment context.");
-  const rules = state.originalDecisions.map((record): string => `${record.assumption.field}/${record.assumption.scope}`).sort();
-  require(JSON.stringify(rules) === JSON.stringify(["grantedPermissions/Any", "requestedPermissions/Any", "requestedPermissions/Production"]), "This bounded workspace requires one request rule, one grant rule, and one production request rule.");
   state.sources.forEach((event, index: number): void => {
     require(event.evidence.sourceId === state.source.id, "Every capture must reference the same canonical source.");
     require(Date.parse(event.evidence.capturedAt) <= Date.parse(event.recordedAt), "Source recording cannot predate capture time.");
@@ -154,6 +153,15 @@ export function validateSharedHistory(state: SharedHistory, replacements: readon
     const previous = times[index - 1];
     return previous === undefined || Date.parse(time) >= Date.parse(previous);
   }), "Review and outcome arrays must retain append chronology.");
+}
+/** The operational rehearsal still requires its three original cases; selected archives do not invent them. */
+export function validateSharedWorkspaceRules(state: SharedHistory, context: z.RefinementCtx): void {
+  const rules = state.originalDecisions.map((record): string => `${record.assumption.field}/${record.assumption.scope}`).sort();
+  if (JSON.stringify(rules) !== JSON.stringify(["grantedPermissions/Any", "requestedPermissions/Any", "requestedPermissions/Production"])) context.addIssue({ code: "custom", message: "This bounded workspace requires one request rule, one grant rule, and one production request rule." });
+}
+export function validateSharedHistory(state: SharedHistory, replacements: readonly ReviewReplacementLink[], context: z.RefinementCtx): void {
+  validateSharedWorkspaceRules(state, context);
+  validateSharedRecordHistory(state, replacements, context);
 }
 export const SharedStateSchema = SharedFieldsSchema.superRefine((state, context): void => validateSharedHistory(state, [], context));
 

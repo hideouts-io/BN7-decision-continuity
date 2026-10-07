@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AuthoredDecisionSchema, FictionalActorSchema } from "./authored-model.ts";
-import { SharedFieldsSchema, SharedEvidenceInputSchema, SharedOutcomeInputSchema, createSharedState, validateSharedHistory, sharedDecision, sharedEvidence, sharedBasis, sharedPendingReview, sharedReviewForLatest } from "./shared-model.ts";
+import { SharedFieldsSchema, SharedEvidenceInputSchema, SharedOutcomeInputSchema, createSharedState, validateSharedRecordHistory, validateSharedWorkspaceRules, sharedDecision, sharedEvidence, sharedBasis, sharedPendingReview, sharedReviewForLatest } from "./shared-model.ts";
 import type { SharedCreationIds, SharedEvidenceInput, SharedOutcomeInput } from "./shared-model.ts";
 
 export const ReplacementInputSchema = z.object({ actor: FictionalActorSchema, rationale: AuthoredDecisionSchema.shape.rationale });
@@ -8,13 +8,14 @@ const ReplacementSchema = ReplacementInputSchema.extend({
   id: z.uuid(), decisionId: z.uuid(), oldReviewId: z.uuid(), newReviewId: z.uuid(), deferredOutcomeId: z.uuid(), recordedAt: z.iso.datetime(),
   oldSourceEventId: z.uuid(), oldEvidenceId: z.uuid(), newSourceEventId: z.uuid(), newEvidenceId: z.uuid(),
 });
-const ClarificationFieldsSchema = SharedFieldsSchema.extend({ schemaVersion: z.literal(6), replacements: z.array(ReplacementSchema) });
+export const ClarificationFieldsSchema = SharedFieldsSchema.extend({ schemaVersion: z.literal(6), replacements: z.array(ReplacementSchema) });
 export type ClarificationState = z.infer<typeof ClarificationFieldsSchema>;
+export type ClarificationHistory = Omit<ClarificationState, "schemaVersion">;
 export type ReplacementInput = z.infer<typeof ReplacementInputSchema>;
 
-/** Replacement closes a review question, never a decision hold or approval basis. */
-export const ClarificationStateSchema = ClarificationFieldsSchema.superRefine((state, context): void => {
-  validateSharedHistory(state, state.replacements, context);
+/** Validate preserved record references without requiring unrelated operational decision cases. */
+export function validateClarificationHistory(state: ClarificationHistory, context: z.RefinementCtx): void {
+  validateSharedRecordHistory(state, state.replacements, context);
   function require(condition: boolean, message: string): void { if (!condition) context.addIssue({ code: "custom", message }); }
   const originalIds = [state.id, state.source.id, ...state.originalDecisions.flatMap((record): string[] => [record.decision.id, record.assumption.id]), ...state.sources.flatMap((event): string[] => [event.id, event.evidence.id]), ...state.reviews.map((review): string => review.id), ...state.outcomes.map((outcome): string => outcome.id)];
   const ids = [...originalIds, ...state.replacements.map((event): string => event.id)];
@@ -43,6 +44,12 @@ export const ClarificationStateSchema = ClarificationFieldsSchema.superRefine((s
     const review = state.reviews.find((item): boolean => item.id === outcome.reviewId);
     require(outcome.outcome !== "reaffirm" || outcome.statement === review?.basis.statement, "Reaffirm preserves the exact earlier decision scope, including a production hold. Choose Revise to record a changed scope.");
   });
+}
+
+/** Replacement closes a review question; the operational workspace retains all three original cases. */
+export const ClarificationStateSchema = ClarificationFieldsSchema.superRefine((state, context): void => {
+  validateSharedWorkspaceRules(state, context);
+  validateClarificationHistory(state, context);
 });
 
 export function createClarificationState(actor: string, ids: SharedCreationIds, recordedAt: string): ClarificationState {

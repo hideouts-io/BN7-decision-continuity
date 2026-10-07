@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ClarificationStateSchema } from "./clarification-model.ts";
-import type { ClarificationState } from "./clarification-model.ts";
-import { decisionBasisEvents, eventAncestors } from "./basis-events.ts";
+import type { ClarificationState, ClarificationHistory } from "./clarification-model.ts";
+import { decisionBasisEventsFromRecords, eventAncestors } from "./basis-events.ts";
 import type { BasisEvent } from "./basis-events.ts";
 import { sharedBasis, sharedDecision, sharedPendingReview } from "./shared-model.ts";
 import type { SharedBasis, SharedDecision, SharedReview } from "./shared-model.ts";
@@ -20,7 +20,7 @@ export type BasisInspection = Readonly<{
 }>;
 
 /** Derive the selected prefix's preserved basis; produce no recalculated historical impact verdict. */
-function snapshot(state: ClarificationState, decisionId: string): BasisSnapshot {
+function snapshot(state: ClarificationHistory, decisionId: string): BasisSnapshot {
   const basis = sharedBasis(state, decisionId), knownSource = state.sources.at(-1);
   if (knownSource === undefined) throw new ReferenceError("A recorded decision perspective requires its original source capture.");
   const support = basis === null ? null : state.sources.find((event): boolean => event.id === basis.sourceEventId);
@@ -30,7 +30,12 @@ function snapshot(state: ClarificationState, decisionId: string): BasisSnapshot 
 
 /** The view is immediately after the event. A same-time incomparable event has no recorded before/after proof. */
 export function decisionBasisAt(input: ClarificationState, decisionId: string, eventId: string): BasisInspection {
-  const state = ClarificationStateSchema.parse(input), events = decisionBasisEvents(state, decisionId);
+  return decisionBasisAtRecords(ClarificationStateSchema.parse(input), decisionId, eventId);
+}
+
+/** Reuse the causal inspector only after a packet or operational history has validated its records. */
+export function decisionBasisAtRecords(state: ClarificationHistory, decisionId: string, eventId: string): BasisInspection {
+  const events = decisionBasisEventsFromRecords(state, decisionId);
   const ancestors = eventAncestors(events);
   const latest = snapshot(state, decisionId);
   if (eventId === "latest") return { event: null, historical: latest, latest, includedEventIds: events.map((event): string => event.id), excludedEventIds: [] };
@@ -43,7 +48,7 @@ export function decisionBasisAt(input: ClarificationState, decisionId: string, e
   const ambiguous = events.filter((event): boolean => event.id !== selected.id && Date.parse(event.recordedAt) === time && !prior.has(event.id) && !ancestors.get(event.id)?.has(selected.id));
   if (ambiguous.length > 0) throw new RangeError(`Historical order is ambiguous: ${selected.id} and ${ambiguous.map((event): string => event.id).join(", ")} share a recorded time without a causal order. Select another event or Latest recorded state; no order or history was invented.`);
   const included = new Set(events.filter((event): boolean => event.id === selected.id || Date.parse(event.recordedAt) < time || prior.has(event.id)).map((event): string => event.id));
-  const prefix: ClarificationState = {
+  const prefix: ClarificationHistory = {
     ...state,
     sources: state.sources.filter((event): boolean => included.has(event.id)),
     reviews: state.reviews.filter((review): boolean => events.some((event): boolean => included.has(event.id) && event.memberIds.includes(review.id))),

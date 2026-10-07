@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ClarificationStateSchema } from "./clarification-model.ts";
-import type { ClarificationState } from "./clarification-model.ts";
+import type { ClarificationState, ClarificationHistory } from "./clarification-model.ts";
 import type { BasisChangedFact, BasisReference } from "./basis-comparison.ts";
 import type { BasisInspection } from "./decision-basis.ts";
 import { sourceFileFromEvidence } from "./source-file.ts";
@@ -26,7 +26,7 @@ function captureReferences(capture: SourceCapture | null): readonly BasisReferen
 }
 
 /** A selected role must resolve the exact record inside this cut, never a later receipt for the same source. */
-function exactCapture(state: ClarificationState, inspection: BasisInspection, sourceEventId: string, evidenceId: string): SourceCapture {
+function exactCapture(state: ClarificationHistory, inspection: BasisInspection, sourceEventId: string, evidenceId: string): SourceCapture {
   const capture = state.sources.find((event): boolean => event.id === sourceEventId && event.evidence.id === evidenceId);
   if (capture === undefined || !inspection.includedEventIds.includes(capture.id)) throw new ReferenceError("Source receipt context requires the exact source-event/evidence pair inside its selected recorded endpoint. No later capture was substituted.");
   return capture;
@@ -58,7 +58,12 @@ function capturedContext(role: BasisReceiptRole, capture: SourceCapture): BasisR
  * current rule evaluation, network request or history mutation contributes to this read-only view.
  */
 export function basisReceiptContexts(input: ClarificationState, inspection: BasisInspection): readonly BasisReceiptContext[] {
-  const state = ClarificationStateSchema.parse(input), snapshot = inspection.historical;
+  return basisReceiptContextsFromRecords(ClarificationStateSchema.parse(input), inspection);
+}
+
+/** Capture-local explanation for records already validated by their own history contract. */
+export function basisReceiptContextsFromRecords(state: ClarificationHistory, inspection: BasisInspection): readonly BasisReceiptContext[] {
+  const snapshot = inspection.historical;
   const basis = snapshot.basis, support = snapshot.support;
   let supporting: BasisReceiptContext;
   if (basis === null) {

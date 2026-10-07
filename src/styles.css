@@ -1,4 +1,24 @@
 /* Independent technical workspace; preserved domain layouts and read-only history. */
+.packet-actions { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin: 20px 0; }
+.packet-actions > p { flex: 1 1 300px; }
+.packet-intake .form-field input[type="file"] { width: 100%; min-width: 0; font-size: 12px; }
+.packet-intake .basis-note, .packet-print-controls .basis-note { color: var(--muted); font-size: 12px; line-height: 1.8; }
+.packet-result { margin-top: 24px; scroll-margin-top: 30px; }
+.packet-metadata { margin-bottom: 24px; }
+.packet-metadata h2 { margin-bottom: 22px; overflow-wrap: anywhere; }
+.packet-boundary { margin-top: 20px; padding: 16px; border: 1px solid var(--accent-line); border-radius: 8px; background: var(--accent-soft); font-size: 13px; line-height: 1.8; }
+.packet-metadata .basis-note { margin-top: 16px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+@media (max-width: 640px) { .packet-actions { align-items: stretch; } .packet-actions .btn { width: 100%; } }
+@media print {
+  .packet-page .packet-intake, .packet-page .packet-print-controls, .packet-page .workspace-intro, .packet-page .site-footer { display: none !important; }
+  .packet-page .packet-result { margin-top: 0; }
+  .packet-page .basis-columns, .packet-page .basis-endpoint-cuts { display: block; }
+  .packet-page .basis-snapshot { margin-bottom: 22px; }
+  .packet-page details::details-content { display: block; content-visibility: visible !important; }
+  .packet-page .basis-reference { color: #111 !important; text-decoration: none; }
+  .packet-page .basis-block, .packet-page .basis-records > li, .packet-page .basis-differences-list > div { break-inside: auto; }
+  .packet-page h2, .packet-page h3, .packet-page h4, .packet-page summary { break-after: avoid; }
+}
 .shared-trail { margin-top: 24px; }
 .source-file-panel { border-left: 3px solid var(--accent-line); }
 .source-file-panel .section-heading { flex-wrap: wrap; }

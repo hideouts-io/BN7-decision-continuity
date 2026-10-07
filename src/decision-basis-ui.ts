@@ -6,6 +6,8 @@ import { basisComparisonMarkup } from "./basis-comparison-render.ts";
 import { basisCapturesMarkup, basisSnapshotMarkup } from "./decision-basis-render.ts";
 import type { BasisColumn } from "./decision-basis-render.ts";
 import { basisReceiptContexts } from "./basis-receipts.ts";
+import { inspectBasisReference } from "./basis-reference-ui.ts";
+import { createComparisonPacket } from "./comparison-packet.ts";
 import { escapeHtml, getElement } from "./render.ts";
 
 type Side = "from" | "to";
@@ -13,6 +15,11 @@ type Side = "from" | "to";
 function select(id: string): HTMLSelectElement {
   const element = getElement(id);
   if (!(element instanceof HTMLSelectElement)) throw new TypeError(`${id} must be a native select.`);
+  return element;
+}
+function button(id: string): HTMLButtonElement {
+  const element = getElement(id);
+  if (!(element instanceof HTMLButtonElement)) throw new TypeError(`${id} must be a native button.`);
   return element;
 }
 function option(value: string, label: string): HTMLOptionElement {
@@ -54,37 +61,17 @@ function errorMessage(message: string): void {
   element.hidden = false;
 }
 
-/** Resolve references only inside their selected endpoint, opening preserved facts for keyboard users. */
-function inspectReference(control: HTMLButtonElement): void {
-  const side = control.dataset.basisRefSide, kind = control.dataset.basisRefKind, id = control.dataset.basisRefId;
-  if ((side !== "from" && side !== "to") || kind === undefined || id === undefined) throw new TypeError("A recorded-basis reference requires its exact endpoint, kind and UUID.");
-  const prefix: BasisColumn = side === "from" ? "basis-historical" : "basis-latest", column = getElement(prefix);
-  let target: HTMLElement | null;
-  if (kind === "decision" || kind === "assumption") {
-    target = document.getElementById(`${prefix}-original-${kind}`);
-    if (target?.textContent !== id) throw new ReferenceError(`The ${side} endpoint has no matching ${kind} ${id}.`);
-  } else if (kind === "review" || kind === "outcome" || kind === "replacement") {
-    target = document.getElementById(`${prefix}-${kind}-${id}`);
-  } else if (kind === "source" || kind === "source-event" || kind === "evidence") {
-    target = column.querySelector<HTMLElement>(`[data-basis-${kind}-id="${CSS.escape(id)}"]`);
-  } else throw new TypeError(`Unsupported recorded-basis reference kind: ${kind}.`);
-  if (target === null || !column.contains(target)) throw new ReferenceError(`The ${side} endpoint has no inspectable ${kind} ${id}. Choose a valid recorded perspective.`);
-  for (let ancestor: HTMLElement | null = target; ancestor !== null && column.contains(ancestor); ancestor = ancestor.parentElement) {
-    if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
-  }
-  target.tabIndex = -1;
-  target.dataset.basisRefKind = kind; target.dataset.basisRefId = id;
-  target.focus({ preventScroll: true }); target.scrollIntoView({ block: "nearest", behavior: "instant" });
-}
-
 /** Keep both selections in memory and isolate inspection errors from the recording workflow. */
 export function connectDecisionBasis(): (next: ClarificationState | null) => void {
   const decision = select("basis-decision"), from = select("basis-event"), to = select("basis-compare-event");
+  const download = button("basis-export");
   let state: ClarificationState | null = null;
   let decisionId: string | null = null;
   let fromEventId: string = "latest", toEventId: string = "latest";
 
   function render(): void {
+    download.disabled = true;
+    getElement("basis-packet-status").textContent = "";
     if (state === null || decisionId === null) return;
     getElement("basis-error").hidden = true;
     const differences = getElement("basis-differences");
@@ -105,6 +92,7 @@ export function connectDecisionBasis(): (next: ClarificationState | null) => voi
       }
       const comparison = compareDecisionBases(state, decisionId, fromEventId, toEventId);
       differences.innerHTML = basisComparisonMarkup(comparison);
+      download.disabled = false;
       getElement("basis-selection-status").textContent = `Showing the two requested recorded perspectives · ${comparison.direction} comparison. Reference controls open their exact endpoint records. Saved history is unchanged.`;
     } catch (error) {
       if (!(error instanceof Error)) throw error;
@@ -120,16 +108,32 @@ export function connectDecisionBasis(): (next: ClarificationState | null) => voi
     if (!(event.target instanceof Element)) return;
     const control = event.target.closest("button[data-basis-ref-id]");
     if (!(control instanceof HTMLButtonElement)) return;
-    try { inspectReference(control); }
+    try { inspectBasisReference(control); }
     catch (error) {
       if (!(error instanceof Error)) throw error;
       errorMessage(`${error.name}: ${error.message}`);
     }
   });
+  download.addEventListener("click", (): void => {
+    getElement("basis-packet-status").textContent = "";
+    try {
+      if (state === null || decisionId === null || download.disabled) throw new ReferenceError("Choose a decision and two valid recorded endpoints before exporting their comparison.");
+      const packet = createComparisonPacket(state, decisionId, fromEventId, toEventId, new Date().toISOString());
+      const blob = new Blob([JSON.stringify(packet, null, 2)], { type: "application/json" }), url = URL.createObjectURL(blob), anchor = document.createElement("a");
+      anchor.href = url; anchor.download = `decision-continuity-comparison-${decisionId}.json`;
+      anchor.click(); URL.revokeObjectURL(url);
+      getElement("basis-packet-status").textContent = "Selected comparison downloaded as a separate read-only packet. Latest selections are frozen to this exported cut. Open the packet inspector to revalidate its exact records; saved history is unchanged.";
+    } catch (error) {
+      if (!(error instanceof Error)) throw error;
+      download.disabled = true;
+      errorMessage(`${error.name}: ${error.message}`);
+      getElement("basis-packet-status").textContent = "No comparison packet was downloaded. Resolve the selected endpoint error before exporting again.";
+    }
+  });
   return (next: ClarificationState | null): void => {
     state = next;
     getElement("basis-panel").hidden = next === null;
-    if (next === null) return;
+    if (next === null) { download.disabled = true; getElement("basis-packet-status").textContent = ""; return; }
     if (decisionId === null) {
       const production = next.originalDecisions.find((record): boolean => record.assumption.scope === "Production");
       if (production === undefined) {

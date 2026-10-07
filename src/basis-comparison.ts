@@ -1,9 +1,9 @@
 import { ClarificationStateSchema } from "./clarification-model.ts";
-import type { ClarificationState } from "./clarification-model.ts";
-import { decisionBasisAt } from "./decision-basis.ts";
+import type { ClarificationState, ClarificationHistory } from "./clarification-model.ts";
+import { decisionBasisAtRecords } from "./decision-basis.ts";
 import type { BasisInspection, BasisSnapshot } from "./decision-basis.ts";
 import type { ContinuityPermission } from "./continuity-model.ts";
-import { basisReceiptContexts, compareReceiptContexts } from "./basis-receipts.ts";
+import { basisReceiptContextsFromRecords, compareReceiptContexts } from "./basis-receipts.ts";
 import type { BasisReceiptContext } from "./basis-receipts.ts";
 
 export type BasisReference = Readonly<{
@@ -85,14 +85,14 @@ function supportingFacts(snapshot: BasisSnapshot): readonly EndpointFact[] {
 }
 
 /** Resolve only an exact frozen reference proven to exist inside this endpoint's causal cut. */
-function pendingTarget(state: ClarificationState, inspection: BasisInspection): SourceCapture | null {
+function pendingTarget(state: ClarificationHistory, inspection: BasisInspection): SourceCapture | null {
   const pending = inspection.historical.pendingReview;
   if (pending === null) return null;
   const target = state.sources.find((capture): boolean => capture.id === pending.sourceEventId && capture.evidence.id === pending.evidenceId);
   if (target === undefined || !inspection.includedEventIds.includes(target.id)) throw new ReferenceError(`Pending review ${pending.id} has no exact source/evidence capture inside this recorded endpoint.`);
   return target;
 }
-function pendingFacts(state: ClarificationState, inspection: BasisInspection): readonly EndpointFact[] {
+function pendingFacts(state: ClarificationHistory, inspection: BasisInspection): readonly EndpointFact[] {
   const snapshot = inspection.historical, pending = snapshot.pendingReview, target = pendingTarget(state, inspection);
   const deferrals = pending === null ? [] : snapshot.outcomes.filter((outcome): boolean => outcome.reviewId === pending.id && outcome.outcome === "defer");
   const refs = pending === null ? activeReferences(snapshot) : [reference("review", pending.id), reference("assumption", pending.assumptionId), reference("source-event", pending.sourceEventId), reference("evidence", pending.evidenceId)];
@@ -122,7 +122,7 @@ function historicalFacts(snapshot: BasisSnapshot): readonly EndpointFact[] {
     fact("recorded-replacements", "Recorded review replacements", String(snapshot.replacements.length), snapshot.replacements.map((replacement): BasisReference => reference("replacement", replacement.id))),
   ];
 }
-function endpointFacts(state: ClarificationState, inspection: BasisInspection): readonly EndpointFact[] {
+function endpointFacts(state: ClarificationHistory, inspection: BasisInspection): readonly EndpointFact[] {
   const snapshot = inspection.historical;
   return [...activeFacts(snapshot), ...supportingFacts(snapshot), ...captureFacts(snapshot.knownSource, "known", "Latest capture known at this endpoint"), ...pendingFacts(state, inspection), ...historicalFacts(snapshot)];
 }
@@ -167,11 +167,15 @@ function originalRules(snapshot: BasisSnapshot): readonly BasisPreservedRule[] {
  * record comparison rather than a reconstructed rule execution or an assurance verdict.
  */
 export function compareDecisionBases(input: ClarificationState, decisionId: string, fromEventId: string, toEventId: string): BasisComparison {
-  const state = ClarificationStateSchema.parse(input);
-  const from = decisionBasisAt(state, decisionId, fromEventId), to = decisionBasisAt(state, decisionId, toEventId);
+  return compareDecisionBasisRecords(ClarificationStateSchema.parse(input), decisionId, fromEventId, toEventId);
+}
+
+/** Compare already validated preserved records, including a focused read-only packet archive. */
+export function compareDecisionBasisRecords(state: ClarificationHistory, decisionId: string, fromEventId: string, toEventId: string): BasisComparison {
+  const from = decisionBasisAtRecords(state, decisionId, fromEventId), to = decisionBasisAtRecords(state, decisionId, toEventId);
   const addedEventIds = difference(to.includedEventIds, from.includedEventIds), removedEventIds = difference(from.includedEventIds, to.includedEventIds);
   if (addedEventIds.length > 0 && removedEventIds.length > 0) throw new RangeError("The selected recorded endpoints have non-nested causal cuts. Their before/after direction cannot be established; select endpoints with a proven inclusive order. No history was changed.");
   const direction = addedEventIds.length > 0 ? "forward" : removedEventIds.length > 0 ? "backward" : "same";
-  const receiptContexts = { from: basisReceiptContexts(state, from), to: basisReceiptContexts(state, to) };
+  const receiptContexts = { from: basisReceiptContextsFromRecords(state, from), to: basisReceiptContextsFromRecords(state, to) };
   return { from, to, direction, addedEventIds, removedEventIds, changedFacts: changedFacts(endpointFacts(state, from), endpointFacts(state, to)), recordChanges: recordChanges(from.historical, to.historical), preservedOriginalRules: originalRules(from.historical), ruleVersionStatus: "unrecorded", receiptContexts, receiptChanges: compareReceiptContexts(receiptContexts.from, receiptContexts.to) };
 }

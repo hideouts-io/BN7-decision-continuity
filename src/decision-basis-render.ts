@@ -8,6 +8,7 @@ import { basisReceiptContextsMarkup } from "./basis-receipts-render.ts";
 
 export type BasisColumn = "basis-historical" | "basis-latest";
 type SourceCapture = ClarificationState["sources"][number];
+type BasisCaptureArchive = Pick<ClarificationState, "sources">;
 type Fact = readonly [string, string, string];
 
 function facts(prefix: string, entries: readonly Fact[]): string {
@@ -31,7 +32,7 @@ function captureFacts(prefix: string, capture: SourceCapture): string {
   ]);
 }
 
-function reviewTarget(state: ClarificationState, review: SharedReview): SourceCapture {
+function reviewTarget(state: BasisCaptureArchive, review: SharedReview): SourceCapture {
   const capture = state.sources.find((item): boolean => item.id === review.sourceEventId && item.evidence.id === review.evidenceId);
   if (capture === undefined) throw new ReferenceError(`Review ${review.id} has no matching frozen source event and evidence.`);
   return capture;
@@ -69,7 +70,7 @@ function supportingEvidence(snapshot: BasisSnapshot, prefix: BasisColumn): strin
   return `<details class="basis-block" id="${prefix}-evidence" data-testid="${prefix}-evidence"><summary>Supporting source and evidence for the active basis</summary>${captureFacts(`${prefix}-support`, support)}</details>`;
 }
 
-function pendingReview(state: ClarificationState, snapshot: BasisSnapshot, prefix: BasisColumn): string {
+function pendingReview(state: BasisCaptureArchive, snapshot: BasisSnapshot, prefix: BasisColumn): string {
   const review = snapshot.pendingReview;
   if (review === null) return `<section class="basis-block" id="${prefix}-pending" data-testid="${prefix}-pending"><h4>Pending review</h4><p>No pending review in this recorded state.</p></section>`;
   const target = reviewTarget(state, review);
@@ -114,12 +115,12 @@ function replacementHistory(snapshot: BasisSnapshot, prefix: BasisColumn): strin
 }
 
 /** Render only preserved facts and exact references; never re-evaluate past rules. */
-export function basisSnapshotMarkup(state: ClarificationState, snapshot: BasisSnapshot, prefix: BasisColumn, heading: string, receiptContexts: readonly BasisReceiptContext[]): string {
+export function basisSnapshotMarkup(state: BasisCaptureArchive, snapshot: BasisSnapshot, prefix: BasisColumn, heading: string, receiptContexts: readonly BasisReceiptContext[]): string {
   return `<h3>${escapeHtml(heading)}</h3><p class="basis-decision-title">${escapeHtml(snapshot.record.decision.title)}</p>${basisReceiptContextsMarkup(receiptContexts, prefix === "basis-historical" ? "from" : "to")}${activeBasis(snapshot, prefix)}${original(snapshot, prefix)}${supportingEvidence(snapshot, prefix)}<section class="basis-block" id="${prefix}-known-source" data-testid="${prefix}-known-source"><h4>Latest capture known in this recorded state</h4>${captureFacts(`${prefix}-known-source`, snapshot.knownSource)}<p class="basis-note">Requested access and declared grants are separate. Deployment is declared; runtime is Not observed.</p></section>${pendingReview(state, snapshot, prefix)}${reviewHistory(snapshot, prefix)}${outcomeHistory(snapshot, prefix)}${replacementHistory(snapshot, prefix)}`;
 }
 
 /** Expose exact captures inside this selected cut, including earlier support no longer active. */
-export function basisCapturesMarkup(state: ClarificationState, inspection: BasisInspection, prefix: BasisColumn): string {
+export function basisCapturesMarkup(state: BasisCaptureArchive, inspection: BasisInspection, prefix: BasisColumn): string {
   const included = new Set(inspection.includedEventIds);
   const captures = state.sources.filter((capture): boolean => included.has(capture.id));
   return `<details class="basis-block" data-testid="${prefix}-captures"><summary>Exact source captures in this recorded perspective · ${captures.length}</summary>${captures.map((capture): string => `<article id="${prefix}-capture-${capture.id}" class="basis-block" data-basis-source-id="${escapeHtml(capture.evidence.sourceId)}" data-basis-source-event-id="${escapeHtml(capture.id)}" data-basis-evidence-id="${escapeHtml(capture.evidence.id)}"><h4>Preserved capture · ${escapeHtml(capture.id)}</h4>${captureFacts(`${prefix}-capture-${capture.id}`, capture)}</article>`).join("")}</details>`;

@@ -19,6 +19,7 @@
         <a id="nav-workspace" data-testid="nav-workspace" href="./impact.html?format=6" aria-current="page"><span class="nav-symbol" aria-hidden="true">◈</span><span>Decision workspace<small>Shared evidence &amp; reassessment</small></span></a>
         <a id="nav-single" data-testid="nav-single" href="./decisions.html?format=4"><span class="nav-symbol" aria-hidden="true">□</span><span>Single decision<small>Write your original basis</small></span></a>
         <a id="nav-guided" data-testid="nav-guided" href="./"><span class="nav-symbol" aria-hidden="true">↗</span><span>Guided example<small>Learn with a complete case</small></span></a>
+        <a id="nav-comparison" data-testid="nav-comparison" href="./comparison.html"><span class="nav-symbol" aria-hidden="true">⇄</span><span>Comparison packet<small>Read-only local inspection</small></span></a>
       </nav>
       <p class="nav-caption">In this workspace</p>
       <nav class="app-section-nav" aria-label="Workspace sections">
@@ -65,6 +66,8 @@
           </div>
           <p id="basis-endpoint-help" class="basis-note">An event endpoint shows preserved facts immediately after that event was recorded. Either endpoint can be latest, earlier or the same; comparison direction follows validated recorded references, not source capture-time sorting.</p>
           <p id="basis-selection-status" data-testid="basis-selection-status" class="basis-note" role="status" aria-live="polite"></p>
+          <div class="packet-actions"><button id="basis-export" data-testid="basis-export" class="btn secondary" type="button" disabled>Download selected comparison ↓</button><a id="basis-packet-open" data-testid="basis-packet-open" class="section-next" href="./comparison.html">Inspect a comparison packet →</a></div>
+          <p id="basis-packet-status" data-testid="basis-packet-status" class="basis-note" role="status" aria-live="polite"></p>
           <p class="basis-note">Historical views show preserved facts. Source receipt metadata belongs to its exact capture; missing or invalid metadata is not filled from a later revision. Rule versions were not recorded, so historical rule evaluation is unavailable. Declarations supply no source authentication or runtime assurance.</p>
           <p id="uncertainty-basis-boundary" data-testid="uncertainty-basis-boundary" class="basis-note" hidden>The recorded-basis inspector reconstructs decision records only. Evidence requirements and their human responses are preserved in the separate journal below; they are not replayed in these historical endpoints.</p>
           <div id="basis-error" data-testid="basis-error" class="message error-message" role="alert" hidden></div>
