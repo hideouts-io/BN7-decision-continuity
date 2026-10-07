@@ -10,6 +10,7 @@ import { checkReviewClarification } from "./clarification-smoke.ts";
 import { checkDecisionBasis } from "./basis-smoke.ts";
 import { checkBasisComparison } from "./basis-comparison-smoke.ts";
 import { checkActionableUncertainty } from "./uncertainty-smoke.ts";
+import { checkSourceFileIntake } from "./source-file-smoke.ts";
 import { checkWorkspaceFoundation } from "./workspace-smoke.ts";
 import { fillCreation } from "./authored-smoke.ts";
 
@@ -85,6 +86,7 @@ try {
   await checkDecisionBasis(browser, url);
   await checkBasisComparison(browser, url);
   await checkActionableUncertainty(browser, url);
+  await checkSourceFileIntake(browser, url);
   await checkWorkspaceFoundation(browser, url);
   console.log("decision_continuity_deployment_smoke_passed", { url: target.href, assets: true, allSevenFormats: true, recoveryRouting: true, completeReassessment: true, recordedDecisionBasis: true, actionableUncertainty: true, keyboardMobileAccessibility: true, syntheticOnly: true });
 } finally { await browser.close(); }

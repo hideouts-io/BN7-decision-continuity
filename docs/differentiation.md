@@ -38,6 +38,8 @@ HID-16 extends that contract to two independently selected perspectives. Facts a
 
 HID-17 adds a bounded declared-context evidence requirement in an explicit v7 continuation. A person records the question, required evidence and reassessment trigger against the exact deferred Unknown review; later insufficient/satisfied assessments cite canonical captures. The fixed Production-declaration criterion and explanatory prose remain separate, and satisfying it changes no decision scope, hold or review. The embedded decision history remains reconstructible; the new journal is inspectable but is not historical endpoint replay. This tests whether structured clarification reduces ambiguity enough to justify its input burden. It does not establish a general requirements engine or product uniqueness.
 
+HID-18 adds bounded offline synthetic source-file intake. A closed artifact preserves declared source/revision and update/capture/record distinctions in an immutable receipt, previews current rule implications before capture and requires an explicit human append. References are not fetched or authenticated. Older/manual source revision metadata remains unavailable; historical receipt context is the next read-only hypothesis in TODO. Technical acceptance establishes neither reduced practitioner effort nor reliable upstream monitoring.
+
 The differentiating combination under investigation is attributable source versions, independently scoped dependencies, explicit uncertainty, responsible clarification replacement and reconstructible frozen review context. Each component has precedents. No verified claim of uniqueness or groundbreaking performance follows from their combination.
 
 ## Ranked capability hypotheses

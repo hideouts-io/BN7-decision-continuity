@@ -22,6 +22,7 @@ import { checkReviewClarification } from "./clarification-smoke.ts";
 import { checkDecisionBasis } from "./basis-smoke.ts";
 import { checkBasisComparison } from "./basis-comparison-smoke.ts";
 import { checkActionableUncertainty } from "./uncertainty-smoke.ts";
+import { checkSourceFileIntake } from "./source-file-smoke.ts";
 import { checkWorkspaceFoundation } from "./workspace-smoke.ts";
 
 const url: string = "http://127.0.0.1:5189";
@@ -303,6 +304,7 @@ try {
     await checkDecisionBasis(browser, url);
     await checkBasisComparison(browser, url);
     await checkActionableUncertainty(browser, url);
+    await checkSourceFileIntake(browser, url);
     await checkWorkspaceFoundation(browser, url);
     await checkKeyboardAndMobile(keyboard);
     await checkInvalidStorage(invalid, completed);

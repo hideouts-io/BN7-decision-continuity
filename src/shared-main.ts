@@ -6,18 +6,20 @@ import { createSharedState, appendSharedEvidence, openSharedReview, appendShared
 import type { SharedState } from "./shared-model.ts";
 import { createClarificationState, appendClarificationEvidence, openClarificationReview, appendClarificationOutcome, replaceClarificationReview } from "./clarification-model.ts";
 import type { ClarificationState } from "./clarification-model.ts";
-import { listClarificationIds, persistClarificationState, readClarificationState } from "./clarification-storage.ts";
+import { clarificationStorageKey, listClarificationIds, persistClarificationState, readClarificationState } from "./clarification-storage.ts";
 import { clarificationHistoryExport } from "./clarification-export.ts";
 import { renderClarificationHistory, annotateClarificationReview } from "./clarification-render.ts";
 import { connectDecisionBasis } from "./decision-basis-ui.ts";
 import { createUncertaintyState, appendUncertaintyRequirement, appendUncertaintyResolution, updateUncertaintyHistory } from "./uncertainty-model.ts";
 import type { UncertaintyState } from "./uncertainty-model.ts";
-import { listUncertaintySessionIds, persistUncertaintyState, readUncertaintyState } from "./uncertainty-storage.ts";
+import { uncertaintyStorageKey, listUncertaintySessionIds, persistUncertaintyState, readUncertaintyState } from "./uncertainty-storage.ts";
 import { uncertaintyHistoryExport } from "./uncertainty-export.ts";
 import { connectUncertainty } from "./uncertainty-ui.ts";
+import { connectSourceFile } from "./source-file-ui.ts";
+import { sourceFileEvidenceInput } from "./source-file.ts";
 type SharedWorkspace = SharedState | ClarificationState;
 import type { ContinuityPermission } from "./continuity-model.ts";
-import { listSharedIds, persistSharedState, readSharedState } from "./shared-storage.ts";
+import { sharedStorageKey, listSharedIds, persistSharedState, readSharedState } from "./shared-storage.ts";
 import { sharedHistoryExport } from "./shared-export.ts";
 import { inspectSharedNode, renderSharedState } from "./shared-render.ts";
 import { connectRecovery } from "./recovery-ui.ts";
@@ -88,6 +90,18 @@ const refreshUncertainty = connectUncertainty({
   },
   run: action,
 });
+const refreshSourceFile = connectSourceFile({
+  current: (): SharedWorkspace | null => state,
+  snapshot: (): string => JSON.stringify(uncertainty ?? state),
+  activeStorageKey: (): string | null => uncertainty !== null ? uncertaintyStorageKey(uncertainty.id) : state === null ? null : state.schemaVersion === 6 ? clarificationStorageKey(state.id) : sharedStorageKey(state.id),
+  capture: (artifact): void => {
+    const record = current(), now = new Date().toISOString();
+    const input = sourceFileEvidenceInput(record, artifact, now);
+    const next = record.schemaVersion === 6 ? appendClarificationEvidence(record, input, crypto.randomUUID(), crypto.randomUUID(), now) : appendSharedEvidence(record, input, crypto.randomUUID(), crypto.randomUUID(), now);
+    save(next, "Inspected synthetic source revision captured with its complete declared receipt. Open a review separately when justified; no outcome was generated.");
+  },
+  run: action,
+});
 function current(): SharedWorkspace {
   if (state === null) throw new ReferenceError("Create or restore a shared-source rehearsal first.");
   return state;
@@ -136,6 +150,7 @@ function show(next: SharedWorkspace): void {
   inspectSharedNode(next, { kind: "evidence", id: latest.evidence.id });
   field("shared-time").value = new Date().toISOString().slice(0, -1);
   refreshReview();
+  refreshSourceFile();
 }
 function save(next: SharedWorkspace, message: string): void {
   if (uncertainty !== null) {
