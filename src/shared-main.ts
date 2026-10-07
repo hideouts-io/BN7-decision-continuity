@@ -10,6 +10,11 @@ import { listClarificationIds, persistClarificationState, readClarificationState
 import { clarificationHistoryExport } from "./clarification-export.ts";
 import { renderClarificationHistory, annotateClarificationReview } from "./clarification-render.ts";
 import { connectDecisionBasis } from "./decision-basis-ui.ts";
+import { createUncertaintyState, appendUncertaintyRequirement, appendUncertaintyResolution, updateUncertaintyHistory } from "./uncertainty-model.ts";
+import type { UncertaintyState } from "./uncertainty-model.ts";
+import { listUncertaintySessionIds, persistUncertaintyState, readUncertaintyState } from "./uncertainty-storage.ts";
+import { uncertaintyHistoryExport } from "./uncertainty-export.ts";
+import { connectUncertainty } from "./uncertainty-ui.ts";
 type SharedWorkspace = SharedState | ClarificationState;
 import type { ContinuityPermission } from "./continuity-model.ts";
 import { listSharedIds, persistSharedState, readSharedState } from "./shared-storage.ts";
@@ -68,8 +73,21 @@ function explainOutcome(): void {
 }
 const storage: Storage = window.localStorage;
 let state: SharedWorkspace | null = null;
+let uncertainty: UncertaintyState | null = null;
 const selectedFormat: string | null = new URL(window.location.href).searchParams.get("format");
 const refreshDecisionBasis = connectDecisionBasis();
+const refreshUncertainty = connectUncertainty({
+  current: (): UncertaintyState | null => uncertainty,
+  appendRequirement: (decisionId, input): void => {
+    if (uncertainty === null) throw new ReferenceError("Create an explicit v7 continuation before recording evidence requirements.");
+    saveUncertainty(appendUncertaintyRequirement(uncertainty, decisionId, input, crypto.randomUUID(), new Date().toISOString()), "Evidence requirement recorded against the exact deferred question. No approval or review outcome changed.");
+  },
+  appendResolution: (requirementId, input): void => {
+    if (uncertainty === null) throw new ReferenceError("Open a v7 continuation before assessing required evidence.");
+    saveUncertainty(appendUncertaintyResolution(uncertainty, requirementId, input, crypto.randomUUID(), new Date().toISOString()), "Human evidence assessment appended. A separate review and outcome are still required for a decision change.");
+  },
+  run: action,
+});
 function current(): SharedWorkspace {
   if (state === null) throw new ReferenceError("Create or restore a shared-source rehearsal first.");
   return state;
@@ -100,6 +118,7 @@ function refreshReview(): void {
     getElement("replacement-context").textContent = `Frozen question: ${pending.evidenceId} (${record.sources.find((item): boolean => item.id === pending.sourceEventId)?.evidence.environment}). Latest declaration: ${target.evidence.id} (${target.evidence.environment}). Defer the Unknown review and capture a later Production declaration before replacement. The production hold and other decisions remain unchanged.`;
   }
   explainOutcome();
+  refreshUncertainty();
 }
 function show(next: SharedWorkspace): void {
   renderSharedState(next);
@@ -119,7 +138,11 @@ function show(next: SharedWorkspace): void {
   refreshReview();
 }
 function save(next: SharedWorkspace, message: string): void {
-  if (next.schemaVersion === 6) {
+  if (uncertainty !== null) {
+    if (next.schemaVersion !== 6) throw new RangeError("V7 continuations require preserved v6 decision history.");
+    saveUncertainty(updateUncertaintyHistory(uncertainty, next), message);
+    return;
+  } else if (next.schemaVersion === 6) {
     if (state !== null && state.schemaVersion !== 6) throw new RangeError("Creation and updates cannot migrate an existing v5 workspace.");
     persistClarificationState(storage, state, next);
   } else {
@@ -131,11 +154,23 @@ function save(next: SharedWorkspace, message: string): void {
   getElement("shared-feedback").textContent = message;
 }
 
+/** Persist the entire opt-in continuation atomically; never rewrite its original v6 key. */
+function saveUncertainty(next: UncertaintyState, message: string): void {
+  if (uncertainty === null) throw new ReferenceError("An active v7 continuation is required before appending records.");
+  persistUncertaintyState(storage, uncertainty, next);
+  uncertainty = next;
+  state = next.history;
+  show(next.history);
+  getElement("shared-feedback").textContent = message;
+}
+
+connectRecovery(storage);
 try {
-  if (selectedFormat !== null && selectedFormat !== "6") throw new RangeError("Shared impact accepts the original v5 route or explicit format=6 only. No record was migrated.");
-  if (selectedFormat === "6") {
+  if (selectedFormat !== null && selectedFormat !== "6" && selectedFormat !== "7") throw new RangeError("Shared impact accepts the original v5 route or explicit format=6 or format=7 only. No record was migrated.");
+  getElement("uncertainty-enrollment").hidden = selectedFormat !== "6";
+  if (selectedFormat === "6" || selectedFormat === "7") {
     getElement("page-title").innerHTML = "Does this decision<br /><span>still hold?</span>";
-    getElement("shared-scope-label").textContent = "Clarified review rehearsal · v6";
+    getElement("shared-scope-label").textContent = selectedFormat === "7" ? "Evidence requirement continuation · v7" : "Clarified review rehearsal · v6";
     getElement("clarification-introduction").hidden = false;
     getElement("clarification-start").hidden = true;
     document.title = "Decision workspace · Decision Continuity";
@@ -143,14 +178,38 @@ try {
     if (!(newLink instanceof HTMLAnchorElement)) throw new TypeError("New rehearsal must be a link.");
     newLink.href = `${appPath("impact.html")}?format=6`;
   }
+  if (selectedFormat === "7") getElement("shared-creation").hidden = true;
   const picker = field("shared-select");
   if (!(picker instanceof HTMLSelectElement)) throw new TypeError("Workspace picker must be a select.");
-  for (const id of selectedFormat === "6" ? listClarificationIds(storage) : listSharedIds(storage)) {
-    const record = selectedFormat === "6" ? readClarificationState(storage, id) : readSharedState(storage, id), option = document.createElement("option");
-    option.value = record.id; option.textContent = `${record.source.name} · ${id.slice(0, 8)}`; picker.appendChild(option);
+  if (selectedFormat === "7") {
+    const empty = picker.options[0];
+    if (empty === undefined) throw new ReferenceError("The continuation picker requires its empty selection.");
+    empty.textContent = "Select a saved v7 continuation";
+  }
+  for (const id of selectedFormat === "7" ? listUncertaintySessionIds(storage) : selectedFormat === "6" ? listClarificationIds(storage) : listSharedIds(storage)) {
+    const record = selectedFormat === "7" ? readUncertaintyState(storage, id).history : selectedFormat === "6" ? readClarificationState(storage, id) : readSharedState(storage, id), option = document.createElement("option");
+    option.value = id; option.textContent = `${record.source.name} · ${id.slice(0, 8)}`; picker.appendChild(option);
   }
   const id: string | null = new URL(window.location.href).searchParams.get("session");
-  if (id !== null) { state = selectedFormat === "6" ? readClarificationState(storage, z.uuid().parse(id)) : readSharedState(storage, z.uuid().parse(id)); picker.value = id; show(state); }
+  getElement("uncertainty-empty").hidden = selectedFormat !== "7" || id !== null;
+  if (id !== null) {
+    if (selectedFormat === "7") { uncertainty = readUncertaintyState(storage, z.uuid().parse(id)); state = uncertainty.history; }
+    else state = selectedFormat === "6" ? readClarificationState(storage, z.uuid().parse(id)) : readSharedState(storage, z.uuid().parse(id));
+    picker.value = id;
+    show(state);
+  }
+  const enroll = getElement("uncertainty-enroll");
+  if (!(enroll instanceof HTMLButtonElement)) throw new TypeError("V7 enrollment must be a button.");
+  enroll.disabled = state?.schemaVersion !== 6 || selectedFormat !== "6";
+  enroll.addEventListener("click", (): void => action((): void => {
+    const record = current();
+    if (record.schemaVersion !== 6 || selectedFormat !== "6") throw new RangeError("Enrollment requires an explicitly selected v6 history. No implicit migration is permitted.");
+    const next = createUncertaintyState(record, crypto.randomUUID(), new Date().toISOString());
+    persistUncertaintyState(storage, null, next);
+    const destination = new URL(window.location.href);
+    destination.searchParams.set("format", "7");
+    window.location.assign(urlForSession(destination, next.id).href);
+  }));
   picker.addEventListener("change", (): void => {
     const url = new URL(window.location.href);
     url.searchParams.delete("session");
@@ -161,6 +220,7 @@ try {
     event.preventDefault();
     action((): void => {
       if (!checked("shared-synthetic")) throw new RangeError("Confirm the synthetic rehearsal boundary before creating records.");
+      if (selectedFormat === "7") throw new RangeError("Start with a v6 rehearsal, then explicitly create its v7 continuation.");
       const next = (selectedFormat === "6" ? createClarificationState : createSharedState)(field("shared-actor").value, { session: crypto.randomUUID(), source: crypto.randomUUID(), event: crypto.randomUUID(), evidence: crypto.randomUUID(), decisions: [crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID()], assumptions: [crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID()] }, new Date().toISOString());
       if (next.schemaVersion === 6) persistClarificationState(storage, null, next);
       else persistSharedState(storage, null, next);
@@ -221,9 +281,9 @@ try {
     });
   });
   getElement("shared-export").addEventListener("click", (): void => action((): void => {
-    const record = current(), now = new Date().toISOString(), exported = record.schemaVersion === 6 ? clarificationHistoryExport(record, now) : sharedHistoryExport(record, now);
+    const record = current(), now = new Date().toISOString(), exported = uncertainty !== null ? uncertaintyHistoryExport(uncertainty, now) : record.schemaVersion === 6 ? clarificationHistoryExport(record, now) : sharedHistoryExport(record, now);
     const blob = new Blob([JSON.stringify(exported, null, 2)], { type: "application/json" }), url: string = URL.createObjectURL(blob), anchor = document.createElement("a");
-    anchor.href = url; anchor.download = `decision-continuity-shared-${record.id}.json`; anchor.click(); URL.revokeObjectURL(url);
+    anchor.href = url; anchor.download = `decision-continuity-shared-${uncertainty?.id ?? record.id}.json`; anchor.click(); URL.revokeObjectURL(url);
     getElement("shared-feedback").textContent = "Validated shared-source JSON downloaded. Browser history stays unchanged. Keep exports outside public repositories.";
   }));
   form("shared-replacement-form").addEventListener("submit", (event: SubmitEvent): void => {
@@ -248,11 +308,12 @@ try {
     annotateClarificationReview(record, id);
     getElement("shared-inspector").focus();
   }));
-  connectRecovery(storage);
 } catch (error) {
   if (!(error instanceof Error)) throw error;
   displayError(error);
-  for (const control of document.querySelectorAll<HTMLInputElement | HTMLButtonElement | HTMLSelectElement | HTMLTextAreaElement>("input, button, select, textarea")) control.disabled = true;
+  for (const control of document.querySelectorAll<HTMLInputElement | HTMLButtonElement | HTMLSelectElement | HTMLTextAreaElement>("input, button, select, textarea")) {
+    if (control.closest("#recovery-section") === null) control.disabled = true;
+  }
   throw error;
 } finally {
   finishApplicationLoading();

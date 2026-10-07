@@ -154,3 +154,7 @@ External participation is deferred. These provisional rules guide a future pract
 - **Stop expansion:** No recurring problem, accountable owner, or plausible benefit over maintenance burden emerges. Revisit the hypothesis; three conversations do not establish market-wide absence of need.
 
 Fix misleading permission claims, lost history, or unaccountable outcomes before another demonstration. Candidate silence is not a product verdict. Production persistence, authentication, connectors, and deployment require a justified later milestone.
+
+## Evidence-requirement critique extension
+
+The [README evidence-requirement walkthrough](../README.md#turn-a-deferred-question-into-an-evidence-requirement) owns v7 run instructions. When participation is available, ask a person to explain what would answer the Unknown-context question, which exact capture their response evaluates, and why satisfying the requirement does not approve production. Compare ordinary deferral notes with the structured question/evidence/trigger journal; measure missed distinctions and annotation burden during the actual session. Keep observations blank until then. Simulated responsible codes and rehearsed responses are technical fixtures, not practitioner feedback. General prose requirements and journal replay are not implemented.

@@ -36,6 +36,8 @@ HID-14 implements a read-only basis inspector for one v6 decision immediately af
 
 HID-16 extends that contract to two independently selected perspectives. Facts and membership differences cite the exact selected records; reversed comparisons are explicitly labeled and do not remove stored history. Unavailable endpoints remain unavailable, while a valid requested opposite perspective remains visible. This is a deterministic record explanation, with no AI service or reconstructed historical rule execution. Practitioner comprehension and effort savings remain to be measured.
 
+HID-17 adds a bounded declared-context evidence requirement in an explicit v7 continuation. A person records the question, required evidence and reassessment trigger against the exact deferred Unknown review; later insufficient/satisfied assessments cite canonical captures. The fixed Production-declaration criterion and explanatory prose remain separate, and satisfying it changes no decision scope, hold or review. The embedded decision history remains reconstructible; the new journal is inspectable but is not historical endpoint replay. This tests whether structured clarification reduces ambiguity enough to justify its input burden. It does not establish a general requirements engine or product uniqueness.
+
 The differentiating combination under investigation is attributable source versions, independently scoped dependencies, explicit uncertainty, responsible clarification replacement and reconstructible frozen review context. Each component has precedents. No verified claim of uniqueness or groundbreaking performance follows from their combination.
 
 ## Ranked capability hypotheses
@@ -53,7 +55,7 @@ This ranking explains research choices; milestone order and execution status bel
 
 ## Cheapest useful evaluation
 
-Use the existing small public/synthetic sequence: initial read-only decision → revised boundary → Unknown applicability → deferral → Production clarification → replacement → separately recorded revision. Add unchanged and ambiguous-order controls. The automated oracle checks reconstruction, references, invalid histories and preservation. It cannot substitute for a practitioner.
+Use the existing small public/synthetic sequence: initial read-only decision → revised boundary → Unknown applicability → deferral → Production clarification → replacement → separately recorded revision. Add unchanged and ambiguous-order controls. The automated oracle checks reconstruction, requirements, attributable response references, invalid histories and preservation. It cannot substitute for a practitioner.
 
 When a real participant is available, ask them to identify the earlier scope, exact change, unresolved question, responsible review and facts unavailable at the earlier cut. Compare the inspector with the ordinary record list, and later with two-cut comparison. Record correctness, assistance, time and input/link-maintenance burden only in an actual session; observations remain blank beforehand. The reviewer kit owns the session protocol and practitioner gate.
 

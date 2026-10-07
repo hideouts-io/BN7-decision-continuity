@@ -1,5 +1,27 @@
 /* Independent technical workspace; preserved domain layouts and read-only history. */
 .shared-trail { margin-top: 24px; }
+.uncertainty-panel { border-left: 3px solid var(--violet-line); }
+.uncertainty-panel h3 { margin: 0 0 12px; font-size: 17px; }
+.uncertainty-provenance { margin: 20px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel2); }
+.uncertainty-panel summary { min-height: 44px; padding: 10px 0; color: var(--accent-strong); font-size: 12px; cursor: pointer; overflow-wrap: anywhere; }
+.uncertainty-forms { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 28px; padding-top: 18px; border-top: 1px solid var(--line); }
+.uncertainty-forms > section { min-width: 0; }
+.uncertainty-context { padding: 13px 15px; border-left: 2px solid var(--violet-line); background: var(--panel2); color: var(--soft); font-size: 12px; overflow-wrap: anywhere; }
+.uncertainty-journal { margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line); }
+.uncertainty-record { min-width: 0; margin-top: 20px; padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
+.uncertainty-record-heading { display: flex; gap: 20px; align-items: start; justify-content: space-between; }
+.uncertainty-record-heading > div { min-width: 0; }
+.uncertainty-record h4 { margin: 8px 0 12px; font-size: 14px; overflow-wrap: anywhere; }
+.uncertainty-record .shared-status { max-width: 45%; white-space: normal; }
+.uncertainty-responses { margin: 18px 0; padding-left: 24px; }
+.uncertainty-responses li { min-width: 0; padding: 16px 0; border-top: 1px solid var(--line); }
+.uncertainty-responses li > p { font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 860px) { .uncertainty-forms { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .uncertainty-record { padding: 15px; }
+  .uncertainty-record-heading { flex-direction: column; gap: 8px; }
+  .uncertainty-record .shared-status { max-width: 100%; }
+}
 .shared-source-nodes { display: grid; grid-template-columns: minmax(0,1fr) 50px minmax(0,1fr); gap: 16px; max-width: 850px; margin: 0 0 28px; align-items: center; }
 .trail-node, .trail-placeholder { display: flex; flex-direction: column; align-items: start; gap: 5px; padding: 15px; min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); text-align: left; overflow-wrap: anywhere; }
 .trail-node { width: 100%; }

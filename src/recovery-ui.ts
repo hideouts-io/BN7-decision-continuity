@@ -42,11 +42,13 @@ export function connectRecovery(storage: Storage): void {
       const record: HistoryExport = parseHistoryExport(await selected.text());
       const destination = recoveryDestination(storage, record);
       const exists: boolean = storage.getItem(destination.storageKey) !== null;
+      const history = record.exportSchemaVersion === 6 ? record.session.history : record.session;
       getElement("import-summary").textContent = [
         `Session: ${record.sessionId}. Format: export v${record.exportSchemaVersion} / session v${record.session.schemaVersion}.`,
-        `Exported: ${record.exportedAt}. Original: ${(record.exportSchemaVersion === 4 || record.exportSchemaVersion === 5) ? record.originalDecisions.map((item): string => item.decision.revision).join(", ") : record.originalDecision.revision}.`,
-        `${record.session.sources.length} source events; ${record.exportSchemaVersion === 3 || (record.exportSchemaVersion === 4 || record.exportSchemaVersion === 5) ? `${record.session.reviews.length} reviews` : record.session.review === null ? "no review" : "one review"}; ${record.session.outcomes.length} outcomes.`,
-        `${record.exportSchemaVersion === 5 ? `${record.session.replacements.length} explicit review replacements. ` : ""}Latest outcome: ${record.session.outcomes.at(-1)?.outcome ?? "none"}.`,
+        `Exported: ${record.exportedAt}. Original: ${(record.exportSchemaVersion === 4 || record.exportSchemaVersion === 5 || record.exportSchemaVersion === 6) ? record.originalDecisions.map((item): string => item.decision.revision).join(", ") : record.originalDecision.revision}.`,
+        `${history.sources.length} source events; ${"reviews" in history ? `${history.reviews.length} reviews` : history.review === null ? "no review" : "one review"}; ${history.outcomes.length} outcomes.`,
+        `${"replacements" in history ? `${history.replacements.length} explicit review replacements. ` : ""}Latest outcome: ${history.outcomes.at(-1)?.outcome ?? "none"}.`,
+        ...(record.exportSchemaVersion === 6 ? [`${record.session.requirements.length} evidence requirements; ${record.session.resolutions.length} separate human evidence assessments. Original v6 history ID: ${record.session.history.id}. Requirements do not grant approval.`] : []),
         exists ? "Identical history already exists. Confirmation opens it without rewriting storage." : "Confirmation restores this history locally. Existing sessions remain intact.",
       ].join("\n");
       pending = record;
@@ -70,6 +72,7 @@ export function connectRecovery(storage: Storage): void {
       url.pathname = appPath(pending.exportSchemaVersion >= 4 ? "impact.html" : pending.exportSchemaVersion === 1 ? "" : "decisions.html");
       url.searchParams.delete("format");
       if (pending.exportSchemaVersion === 5) url.searchParams.set("format", "6");
+      if (pending.exportSchemaVersion === 6) url.searchParams.set("format", "7");
       if (pending.exportSchemaVersion === 3) url.searchParams.set("format", "4");
       window.location.assign(urlForSession(url, destination.id).href);
     } catch (error) {
