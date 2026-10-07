@@ -44,7 +44,7 @@ HID-19 explains declared source context at two selected recorded bases. Active s
 
 The differentiating combination under investigation is attributable source versions, independently scoped dependencies, explicit uncertainty, responsible clarification replacement and reconstructible frozen review context. Each component has precedents. No verified claim of uniqueness or groundbreaking performance follows from their combination.
 
-Historical explanations now preserve the question/response context but can be long. The next bounded UX hypothesis is a compact event navigator over the same validated causal graph, with exact From/To selection and a text/keyboard equivalent. It should help a person distinguish capture, evidence satisfaction and the later decision act without hiding the full explanation or inventing an order. Automated navigation checks cannot establish that it reduces human effort.
+Historical explanations preserve the question/response context but can be long. HID-22 projects the same validated causal graph into a compact workspace navigator with exact From/To selection and native text/keyboard controls. Recorded-time groups preserve causal dependencies and unordered peers rather than imply a global sequence; opening a record uses its exact endpoint references. The UX hypothesis is that this helps a person distinguish capture, evidence satisfaction and the later decision act without hiding the full explanation. Automated navigation checks cannot establish that it reduces human effort.
 
 ## Ranked capability hypotheses
 

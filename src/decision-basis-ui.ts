@@ -13,6 +13,8 @@ import { uncertaintyBasisEvents, uncertaintyBasisAt, compareUncertaintyDecisionB
 import type { UncertaintyBasisContext } from "./uncertainty-basis.ts";
 import { uncertaintyBasisMarkup } from "./uncertainty-basis-render.ts";
 import { createUncertaintyComparisonPacket } from "./uncertainty-comparison-packet.ts";
+import { basisNavigator } from "./basis-navigator.ts";
+import { basisNavigatorMarkup } from "./basis-navigator-render.ts";
 import { escapeHtml, getElement } from "./render.ts";
 
 type Side = "from" | "to";
@@ -81,11 +83,28 @@ function errorMessage(message: string): void {
 /** Keep both selections in memory and isolate inspection errors from the recording workflow. */
 export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
   const decision = select("basis-decision"), from = select("basis-event"), to = select("basis-compare-event");
-  const download = button("basis-export");
+  const download = button("basis-export"), navigator = getElement("basis-navigator");
   let state: BasisWorkspace | null = null;
   let decisionId: string | null = null;
   let fromEventId: string = "latest", toEventId: string = "latest";
 
+  function renderNavigator(events: ReturnType<typeof decisionBasisEvents>): void {
+    const focused = document.activeElement;
+    const focusId = focused instanceof HTMLElement && navigator.contains(focused) ? focused.id : null;
+    const openDetails = [...navigator.querySelectorAll<HTMLDetailsElement>("details[open]")].map((detail): string => detail.id);
+    const scroll = document.getElementById("basis-nav-scroll");
+    const scrollTop = scroll instanceof HTMLElement ? scroll.scrollTop : 0;
+    navigator.innerHTML = basisNavigatorMarkup(basisNavigator(events, fromEventId, toEventId));
+    for (const id of openDetails) {
+      const detail = document.getElementById(id);
+      if (detail instanceof HTMLDetailsElement && navigator.contains(detail)) detail.open = true;
+    }
+    const nextScroll = getElement("basis-nav-scroll");
+    nextScroll.scrollTop = scrollTop;
+    if (focusId === null || focusId === "") return;
+    const target = document.getElementById(focusId);
+    if (target instanceof HTMLElement && navigator.contains(target)) target.focus({ preventScroll: true });
+  }
   function render(): void {
     download.disabled = true;
     getElement("basis-packet-status").textContent = "";
@@ -96,10 +115,13 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
     clearSnapshot(getElement("basis-historical")); clearSnapshot(getElement("basis-latest"));
     const history = workspaceHistory(state);
     choices(decision, history.originalDecisions.map((record): HTMLOptionElement => option(record.decision.id, record.decision.title)), decisionId);
+    let navigatorRendered = false;
     try {
       const events = state.schemaVersion === 7 ? uncertaintyBasisEvents(state, decisionId) : decisionBasisEvents(state, decisionId);
       const options = (): readonly HTMLOptionElement[] => [option("latest", "Latest recorded state"), ...events.map((item): HTMLOptionElement => option(item.id, `${item.label} · ${item.recordedAt} · ${item.id.slice(0, 8)}`))];
       choices(from, options(), fromEventId); choices(to, options(), toEventId);
+      renderNavigator(events);
+      navigatorRendered = true;
       const fromInspection = snapshot(state, decisionId, fromEventId, "from", "basis-historical");
       const toInspection = snapshot(state, decisionId, toEventId, "to", "basis-latest");
       if (fromInspection === null || toInspection === null) {
@@ -114,6 +136,7 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
       getElement("basis-selection-status").textContent = `Showing the two requested recorded perspectives · ${comparison.direction} comparison. Reference controls open their exact endpoint records. Saved history is unchanged.`;
     } catch (error) {
       if (!(error instanceof Error)) throw error;
+      if (!navigatorRendered) navigator.innerHTML = `<h3 id="basis-navigator-title">Recorded event map unavailable</h3><p data-testid="basis-nav-error">${escapeHtml(error.name)}: ${escapeHtml(error.message)}</p><p class="basis-note">No previous decision map is retained. Saved history was not changed.</p>`;
       differences.innerHTML = `<p data-testid="basis-comparison-error">${escapeHtml(error.name)}: ${escapeHtml(error.message)}</p>`;
       getElement("basis-selection-status").textContent = "This recorded comparison is unavailable. Inspection did not change the saved rehearsal.";
       errorMessage(`${error.name}: ${error.message}`);
@@ -124,6 +147,14 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
   to.addEventListener("change", (): void => { toEventId = to.value; render(); });
   getElement("basis-panel").addEventListener("click", (event: MouseEvent): void => {
     if (!(event.target instanceof Element)) return;
+    const selection = event.target.closest("button[data-basis-nav-event-id]");
+    if (selection instanceof HTMLButtonElement) {
+      const id = selection.dataset.basisNavEventId, side = selection.dataset.basisNavSide;
+      if (id === undefined || (side !== "from" && side !== "to")) throw new TypeError("An event card requires its exact From/To endpoint and recorded event UUID.");
+      if (side === "from") fromEventId = id; else toEventId = id;
+      render();
+      return;
+    }
     const control = event.target.closest("button[data-basis-ref-id]");
     if (!(control instanceof HTMLButtonElement)) return;
     try { inspectBasisReference(control); }
@@ -152,7 +183,7 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
   return (next: BasisWorkspace | null): void => {
     state = next;
     getElement("basis-panel").hidden = next === null;
-    if (next === null) { download.disabled = true; getElement("basis-packet-status").textContent = ""; return; }
+    if (next === null) { navigator.replaceChildren(); download.disabled = true; getElement("basis-packet-status").textContent = ""; return; }
     if (decisionId === null) {
       const production = workspaceHistory(next).originalDecisions.find((record): boolean => record.assumption.scope === "Production");
       if (production === undefined) {
