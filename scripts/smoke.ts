@@ -27,6 +27,7 @@ import { checkBasisReceipts } from "./basis-receipts-smoke.ts";
 import { checkComparisonPacket } from "./comparison-packet-smoke.ts";
 import { checkUncertaintyBasis } from "./uncertainty-basis-smoke.ts";
 import { checkBasisNavigator } from "./basis-navigator-smoke.ts";
+import { checkBasisReviewBrief } from "./basis-review-brief-smoke.ts";
 import { checkWorkspaceFoundation } from "./workspace-smoke.ts";
 
 const url: string = "http://127.0.0.1:5189";
@@ -313,6 +314,7 @@ try {
     await checkComparisonPacket(browser, url);
     await checkUncertaintyBasis(browser, url);
     await checkBasisNavigator(browser, url);
+    await checkBasisReviewBrief(browser, url);
     await checkWorkspaceFoundation(browser, url);
     await checkKeyboardAndMobile(keyboard);
     await checkInvalidStorage(invalid, completed);

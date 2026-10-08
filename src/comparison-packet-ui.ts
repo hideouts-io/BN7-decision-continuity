@@ -4,6 +4,8 @@ import type { ComparisonPacketInspection } from "./comparison-packet.ts";
 import type { BasisColumn } from "./decision-basis-render.ts";
 import { basisCapturesMarkup, basisSnapshotMarkup } from "./decision-basis-render.ts";
 import { basisComparisonMarkup } from "./basis-comparison-render.ts";
+import { basisReviewBrief } from "./basis-review-brief.ts";
+import { basisReviewBriefMarkup } from "./basis-review-brief-render.ts";
 import { comparisonPacketMetadataMarkup } from "./comparison-packet-render.ts";
 import { uncertaintyBasisMarkup } from "./uncertainty-basis-render.ts";
 import { inspectBasisReference } from "./basis-reference-ui.ts";
@@ -52,17 +54,20 @@ export function connectComparisonPacket(): void {
   function clearResult(): void {
     generation += 1; pending = null; readingGeneration = null;
     result.hidden = true;
-    for (const id of ["packet-metadata", "basis-historical", "basis-latest", "basis-differences"]) {
+    for (const id of ["packet-metadata", "basis-review-brief", "basis-historical", "basis-latest", "basis-differences"]) {
       const element = getElement(id);
       element.replaceChildren();
       for (const key of ["decisionId", "basisRevision", "knownSourceId", "pendingReviewId", "eventId"]) delete element.dataset[key];
     }
+    getElement("basis-review-brief").hidden = true;
     controls();
   }
   function render(inspection: ComparisonPacketInspection): void {
     getElement("packet-metadata").innerHTML = comparisonPacketMetadataMarkup(inspection);
     renderEndpoint(inspection, "from", "basis-historical"); renderEndpoint(inspection, "to", "basis-latest");
     getElement("basis-differences").innerHTML = basisComparisonMarkup(inspection.comparison);
+    const brief = getElement("basis-review-brief");
+    brief.innerHTML = basisReviewBriefMarkup(basisReviewBrief(inspection.comparison)); brief.hidden = false;
     for (const side of ["from", "to"] as const) {
       if (inspection.packet[side].selection !== "frozen-latest") continue;
       const description = getElement(`basis-${side}-cut`).querySelector("p");

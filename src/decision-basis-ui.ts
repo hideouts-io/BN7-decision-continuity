@@ -3,6 +3,8 @@ import type { BasisInspection } from "./decision-basis.ts";
 import { decisionBasisAt, decisionBasisEvents } from "./decision-basis.ts";
 import { compareDecisionBases } from "./basis-comparison.ts";
 import { basisComparisonMarkup } from "./basis-comparison-render.ts";
+import { basisReviewBrief } from "./basis-review-brief.ts";
+import { basisReviewBriefMarkup } from "./basis-review-brief-render.ts";
 import { basisCapturesMarkup, basisSnapshotMarkup } from "./decision-basis-render.ts";
 import type { BasisColumn } from "./decision-basis-render.ts";
 import { basisReceiptContexts } from "./basis-receipts.ts";
@@ -83,10 +85,13 @@ function errorMessage(message: string): void {
 /** Keep both selections in memory and isolate inspection errors from the recording workflow. */
 export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
   const decision = select("basis-decision"), from = select("basis-event"), to = select("basis-compare-event");
-  const download = button("basis-export"), navigator = getElement("basis-navigator");
+  const download = button("basis-export"), navigator = getElement("basis-navigator"), brief = getElement("basis-review-brief");
   let state: BasisWorkspace | null = null;
   let decisionId: string | null = null;
   let fromEventId: string = "latest", toEventId: string = "latest";
+  let printDetails: readonly Readonly<{ element: HTMLDetailsElement; open: boolean }>[] | null = null;
+
+  function clearBrief(): void { brief.replaceChildren(); brief.hidden = true; }
 
   function renderNavigator(events: ReturnType<typeof decisionBasisEvents>): void {
     const focused = document.activeElement;
@@ -107,6 +112,7 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
   }
   function render(): void {
     download.disabled = true;
+    clearBrief();
     getElement("basis-packet-status").textContent = "";
     if (state === null || decisionId === null) return;
     getElement("basis-error").hidden = true;
@@ -131,11 +137,14 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
         return;
       }
       const comparison = state.schemaVersion === 7 ? compareUncertaintyDecisionBases(state, decisionId, fromEventId, toEventId) : compareDecisionBases(state, decisionId, fromEventId, toEventId);
-      differences.innerHTML = basisComparisonMarkup(comparison);
+      const briefMarkup = basisReviewBriefMarkup(basisReviewBrief(comparison)), differenceMarkup = basisComparisonMarkup(comparison);
+      differences.innerHTML = differenceMarkup;
+      brief.innerHTML = briefMarkup; brief.hidden = false;
       download.disabled = false;
       getElement("basis-selection-status").textContent = `Showing the two requested recorded perspectives · ${comparison.direction} comparison. Reference controls open their exact endpoint records. Saved history is unchanged.`;
     } catch (error) {
       if (!(error instanceof Error)) throw error;
+      clearBrief();
       if (!navigatorRendered) navigator.innerHTML = `<h3 id="basis-navigator-title">Recorded event map unavailable</h3><p data-testid="basis-nav-error">${escapeHtml(error.name)}: ${escapeHtml(error.message)}</p><p class="basis-note">No previous decision map is retained. Saved history was not changed.</p>`;
       differences.innerHTML = `<p data-testid="basis-comparison-error">${escapeHtml(error.name)}: ${escapeHtml(error.message)}</p>`;
       getElement("basis-selection-status").textContent = "This recorded comparison is unavailable. Inspection did not change the saved rehearsal.";
@@ -160,6 +169,7 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
     try { inspectBasisReference(control); }
     catch (error) {
       if (!(error instanceof Error)) throw error;
+      clearBrief();
       errorMessage(`${error.name}: ${error.message}`);
     }
   });
@@ -180,10 +190,20 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
       getElement("basis-packet-status").textContent = "No comparison packet was downloaded. Resolve the selected endpoint error before exporting again.";
     }
   });
+  window.addEventListener("beforeprint", (): void => {
+    if (brief.hidden || printDetails !== null) return;
+    printDetails = [...brief.querySelectorAll<HTMLDetailsElement>("details")].map((element): Readonly<{ element: HTMLDetailsElement; open: boolean }> => ({ element, open: element.open }));
+    for (const disclosure of printDetails) disclosure.element.open = true;
+  });
+  window.addEventListener("afterprint", (): void => {
+    if (printDetails === null) return;
+    for (const disclosure of printDetails) disclosure.element.open = disclosure.open;
+    printDetails = null;
+  });
   return (next: BasisWorkspace | null): void => {
     state = next;
     getElement("basis-panel").hidden = next === null;
-    if (next === null) { navigator.replaceChildren(); download.disabled = true; getElement("basis-packet-status").textContent = ""; return; }
+    if (next === null) { navigator.replaceChildren(); clearBrief(); download.disabled = true; getElement("basis-packet-status").textContent = ""; return; }
     if (decisionId === null) {
       const production = workspaceHistory(next).originalDecisions.find((record): boolean => record.assumption.scope === "Production");
       if (production === undefined) {

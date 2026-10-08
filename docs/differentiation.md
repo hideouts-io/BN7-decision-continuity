@@ -46,6 +46,8 @@ The differentiating combination under investigation is attributable source versi
 
 Historical explanations preserve the question/response context but can be long. HID-22 projects the same validated causal graph into a compact workspace navigator with exact From/To selection and native text/keyboard controls. Recorded-time groups preserve causal dependencies and unordered peers rather than imply a global sequence; opening a record uses its exact endpoint references. The UX hypothesis is that this helps a person distinguish capture, evidence satisfaction and the later decision act without hiding the full explanation. Automated navigation checks cannot establish that it reduces human effort.
 
+HID-23 shares a deterministic four-section review brief between the workspace and frozen packet inspector. Context facts and complete changes remain inspectable through exact endpoint references, with missing declarations and separate human outcomes preserved. The hypothesis is that a compact first reading improves comprehension without concealing uncertainty or adding preparation burden. This is an interface and record-reconstruction capability, not a generated assurance verdict, evidence of novelty or demonstrated practitioner benefit.
+
 ## Ranked capability hypotheses
 
 This ranking explains research choices; milestone order and execution status belong in TODO and Linear.
