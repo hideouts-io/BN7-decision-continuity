@@ -16,6 +16,7 @@ import { checkComparisonPacket } from "./comparison-packet-smoke.ts";
 import { checkUncertaintyBasis } from "./uncertainty-basis-smoke.ts";
 import { checkBasisNavigator } from "./basis-navigator-smoke.ts";
 import { checkBasisReviewBrief } from "./basis-review-brief-smoke.ts";
+import { checkBasisReferenceNavigation } from "./basis-reference-smoke.ts";
 import { checkWorkspaceFoundation } from "./workspace-smoke.ts";
 import { fillCreation } from "./authored-smoke.ts";
 
@@ -97,6 +98,7 @@ try {
   await checkUncertaintyBasis(browser, url);
   await checkBasisNavigator(browser, url);
   await checkBasisReviewBrief(browser, url);
+  await checkBasisReferenceNavigation(browser, url);
   await checkWorkspaceFoundation(browser, url);
   console.log("decision_continuity_deployment_smoke_passed", { url: target.href, assets: true, allSevenFormats: true, recoveryRouting: true, completeReassessment: true, recordedDecisionBasis: true, actionableUncertainty: true, keyboardMobileAccessibility: true, syntheticOnly: true });
 } finally { await browser.close(); }

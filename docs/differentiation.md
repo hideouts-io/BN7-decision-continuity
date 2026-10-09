@@ -48,6 +48,8 @@ Historical explanations preserve the question/response context but can be long. 
 
 HID-23 shares a deterministic four-section review brief between the workspace and frozen packet inspector. Context facts and complete changes remain inspectable through exact endpoint references, with missing declarations and separate human outcomes preserved. The hypothesis is that a compact first reading improves comprehension without concealing uncertainty or adding preparation burden. This is an interface and record-reconstruction capability, not a generated assurance verdict, evidence of novelty or demonstrated practitioner benefit.
 
+HID-24 preserves the originating explanation when a person inspects one exact cited endpoint record and returns. Temporary focus, disclosures and reading context remain separate from historical records and frozen packet cuts. The hypothesis is less navigation effort with equally accurate reconstruction; automated round trips establish technical behavior only. A subsequent source-adapter contract can be rehearsed locally before activation, but neither navigation nor transport consistency establishes source authenticity, practitioner benefit or demand.
+
 ## Ranked capability hypotheses
 
 This ranking explains research choices; milestone order and execution status belong in TODO and Linear.

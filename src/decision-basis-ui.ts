@@ -8,7 +8,7 @@ import { basisReviewBriefMarkup } from "./basis-review-brief-render.ts";
 import { basisCapturesMarkup, basisSnapshotMarkup } from "./decision-basis-render.ts";
 import type { BasisColumn } from "./decision-basis-render.ts";
 import { basisReceiptContexts } from "./basis-receipts.ts";
-import { inspectBasisReference } from "./basis-reference-ui.ts";
+import { connectBasisReferenceNavigation } from "./basis-reference-ui.ts";
 import { createComparisonPacket } from "./comparison-packet.ts";
 import type { UncertaintyState } from "./uncertainty-model.ts";
 import { uncertaintyBasisEvents, uncertaintyBasisAt, compareUncertaintyDecisionBases } from "./uncertainty-basis.ts";
@@ -86,6 +86,7 @@ function errorMessage(message: string): void {
 export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
   const decision = select("basis-decision"), from = select("basis-event"), to = select("basis-compare-event");
   const download = button("basis-export"), navigator = getElement("basis-navigator"), brief = getElement("basis-review-brief");
+  const panel = getElement("basis-panel"), navigation = connectBasisReferenceNavigation(panel);
   let state: BasisWorkspace | null = null;
   let decisionId: string | null = null;
   let fromEventId: string = "latest", toEventId: string = "latest";
@@ -111,6 +112,7 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
     if (target instanceof HTMLElement && navigator.contains(target)) target.focus({ preventScroll: true });
   }
   function render(): void {
+    navigation.invalidate();
     download.disabled = true;
     clearBrief();
     getElement("basis-packet-status").textContent = "";
@@ -154,7 +156,10 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
   decision.addEventListener("change", (): void => { decisionId = decision.value; render(); });
   from.addEventListener("change", (): void => { fromEventId = from.value; render(); });
   to.addEventListener("change", (): void => { toEventId = to.value; render(); });
-  getElement("basis-panel").addEventListener("click", (event: MouseEvent): void => {
+  document.addEventListener("change", (event: Event): void => {
+    if (event.target instanceof HTMLInputElement && event.target.type === "file") navigation.invalidate();
+  });
+  panel.addEventListener("click", (event: MouseEvent): void => {
     if (!(event.target instanceof Element)) return;
     const selection = event.target.closest("button[data-basis-nav-event-id]");
     if (selection instanceof HTMLButtonElement) {
@@ -164,11 +169,12 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
       render();
       return;
     }
-    const control = event.target.closest("button[data-basis-ref-id]");
+    const control = event.target.closest("button[data-basis-ref-id], button[data-basis-return]");
     if (!(control instanceof HTMLButtonElement)) return;
-    try { inspectBasisReference(control); }
+    try { if (control.hasAttribute("data-basis-return")) navigation.returnToExplanation(); else navigation.inspect(control); }
     catch (error) {
       if (!(error instanceof Error)) throw error;
+      navigation.invalidate();
       clearBrief();
       errorMessage(`${error.name}: ${error.message}`);
     }
@@ -201,6 +207,7 @@ export function connectDecisionBasis(): (next: BasisWorkspace | null) => void {
     printDetails = null;
   });
   return (next: BasisWorkspace | null): void => {
+    navigation.invalidate();
     state = next;
     getElement("basis-panel").hidden = next === null;
     if (next === null) { navigator.replaceChildren(); clearBrief(); download.disabled = true; getElement("basis-packet-status").textContent = ""; return; }

@@ -8,7 +8,7 @@ import { basisReviewBrief } from "./basis-review-brief.ts";
 import { basisReviewBriefMarkup } from "./basis-review-brief-render.ts";
 import { comparisonPacketMetadataMarkup } from "./comparison-packet-render.ts";
 import { uncertaintyBasisMarkup } from "./uncertainty-basis-render.ts";
-import { inspectBasisReference } from "./basis-reference-ui.ts";
+import { connectBasisReferenceNavigation } from "./basis-reference-ui.ts";
 import { getElement } from "./render.ts";
 
 function button(id: string): HTMLButtonElement {
@@ -45,6 +45,7 @@ export function connectComparisonPacket(): void {
   const form = getElement("packet-form"), file = getElement("packet-file");
   if (!(form instanceof HTMLFormElement) || !(file instanceof HTMLInputElement) || file.type !== "file") throw new TypeError("Comparison inspection requires its native form and file input.");
   const inspect = button("packet-inspect"), print = button("packet-print"), clear = button("packet-clear"), result = getElement("packet-result");
+  const navigation = connectBasisReferenceNavigation(result);
   let generation = 0;
   let readingGeneration: number | null = null;
   let pending: ComparisonPacketInspection | null = null;
@@ -52,6 +53,7 @@ export function connectComparisonPacket(): void {
 
   function controls(): void { inspect.disabled = readingGeneration !== null; print.disabled = readingGeneration !== null || pending === null; }
   function clearResult(): void {
+    navigation.invalidate();
     generation += 1; pending = null; readingGeneration = null;
     result.hidden = true;
     for (const id of ["packet-metadata", "basis-review-brief", "basis-historical", "basis-latest", "basis-differences"]) {
@@ -63,6 +65,7 @@ export function connectComparisonPacket(): void {
     controls();
   }
   function render(inspection: ComparisonPacketInspection): void {
+    navigation.invalidate();
     getElement("packet-metadata").innerHTML = comparisonPacketMetadataMarkup(inspection);
     renderEndpoint(inspection, "from", "basis-historical"); renderEndpoint(inspection, "to", "basis-latest");
     getElement("basis-differences").innerHTML = basisComparisonMarkup(inspection.comparison);
@@ -108,9 +111,9 @@ export function connectComparisonPacket(): void {
   });
   result.addEventListener("click", (event: MouseEvent): void => {
     if (!(event.target instanceof Element)) return;
-    const control = event.target.closest("button[data-basis-ref-id]");
+    const control = event.target.closest("button[data-basis-ref-id], button[data-basis-return]");
     if (!(control instanceof HTMLButtonElement)) return;
-    try { inspectBasisReference(control); }
+    try { if (control.hasAttribute("data-basis-return")) navigation.returnToExplanation(); else navigation.inspect(control); }
     catch (error) { if (!(error instanceof Error)) throw error; clearResult(); packetError(error); }
   });
   window.addEventListener("beforeprint", (): void => {

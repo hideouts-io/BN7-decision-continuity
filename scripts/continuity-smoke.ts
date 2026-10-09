@@ -32,16 +32,21 @@ async function capture(page: Page, requested: readonly ContinuityPermission[], g
   await fillCapture(page);
   await page.getByTestId("authored-note").fill(note);
   for (const [suffix, permission] of [["read", "documents:read"], ["write", "documents:write"], ["delete", "documents:delete"]] as const) {
-    await page.getByTestId(`authored-request-${suffix}`).setChecked(requested.includes(permission));
-    await page.getByTestId(`authored-grant-${suffix}`).setChecked(granted.includes(permission));
+    for (const [kind, permissions] of [["request", requested], ["grant", granted]] as const) {
+      const control = page.getByTestId(`authored-${kind}-${suffix}`), selected = permissions.includes(permission);
+      if (await control.isChecked() !== selected) { await control.focus(); await page.keyboard.press("Space"); }
+      assert.equal(await control.isChecked(), selected);
+    }
   }
-  await page.getByTestId("authored-capture").click();
+  await page.getByTestId("authored-capture").focus();
+  await page.keyboard.press("Enter");
 }
 async function outcome(page: Page, value: string, statement: string): Promise<void> {
   await page.getByTestId("authored-outcome").selectOption(value);
   await page.getByTestId("authored-rationale").fill("Synthetic reassessment: the captured requests, declared grants and unobserved runtime remain distinct. Scope and uncertainty are recorded explicitly.");
   await page.getByTestId("authored-statement").fill(statement);
-  await page.getByTestId("authored-record-outcome").click();
+  await page.getByTestId("authored-record-outcome").focus();
+  await page.keyboard.press("Enter");
 }
 async function download(page: Page, testId: string): Promise<string> {
   const downloading = page.waitForEvent("download");
@@ -284,7 +289,8 @@ export async function checkDecisionContinuity(browser: Browser, url: string): Pr
     await page.getByTestId("authored-rationale").fill(largeRationale);
     await page.getByTestId("authored-statement").fill(largeStatement);
     const nearLimitBytes = await snapshot(page);
-    await page.getByTestId("authored-record-outcome").click();
+    await page.getByTestId("authored-record-outcome").focus();
+    await page.keyboard.press("Enter");
     await page.getByTestId("authored-error").waitFor({ state: "visible" });
     assert.ok((await page.getByTestId("authored-error").innerText()).includes("1 MiB"));
     assert.deepEqual(await snapshot(page), nearLimitBytes, "Oversized appends must never truncate or rewrite the saved history.");
