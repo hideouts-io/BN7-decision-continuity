@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [codex/decision-continuity]
+  pull_request:
+    branches: [codex/decision-continuity]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build and browser integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Install isolated Chrome and its runtime dependencies
+        run: npx playwright install --with-deps chrome
+      - name: Build with strict types
+        run: npm run build
+      - name: Exercise the real browser workflow and accessibility
+        run: npm run smoke
+      - name: Rehearse the real loopback source adapter
+        run: npm run rehearse:adapter
