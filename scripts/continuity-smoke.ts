@@ -247,7 +247,8 @@ export async function checkDecisionContinuity(browser: Browser, url: string): Pr
     await restored.reload();
     assert.deepEqual(await snapshot(restored), restoredBytes);
     await restored.setViewportSize({ width: 375, height: 812 });
-    assert.equal(await restored.evaluate((): boolean => document.documentElement.scrollWidth <= innerWidth), true);
+    assert.equal(await restored.evaluate((): boolean => document.documentElement.scrollWidth <= innerWidth), true,
+      await restored.evaluate((): string => JSON.stringify({ viewport: innerWidth, documentWidth: document.documentElement.scrollWidth, overflowing: Array.from(document.querySelectorAll<HTMLElement>("body *")).filter((element): boolean => element.getBoundingClientRect().right > innerWidth).map((element) => ({ tag: element.tagName, id: element.id, className: element.className, right: element.getBoundingClientRect().right, width: element.getBoundingClientRect().width })).slice(0, 20) })));
     await accessible(restored);
     await restored.screenshot({ path: "output/playwright/continuity-complete-mobile.png", fullPage: true });
     await restored.locator("#continuity-summary").scrollIntoViewIfNeeded();
