@@ -13,6 +13,7 @@
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "smoke": "node scripts/smoke.ts",
     "prepare:critique": "node scripts/prepare-critique.ts",
+    "rehearse:adapter": "node scripts/rehearse-source-adapter.ts",
     "browser": "playwright-cli"
   },
   "dependencies": {

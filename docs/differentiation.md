@@ -50,6 +50,8 @@ HID-23 shares a deterministic four-section review brief between the workspace an
 
 HID-24 preserves the originating explanation when a person inspects one exact cited endpoint record and returns. Temporary focus, disclosures and reading context remain separate from historical records and frozen packet cuts. The hypothesis is less navigation effort with equally accurate reconstruction; automated round trips establish technical behavior only. A subsequent source-adapter contract can be rehearsed locally before activation, but neither navigation nor transport consistency establishes source authenticity, practitioner benefit or demand.
 
+HID-25 rehearses that transport contract over selected synthetic bytes and real local HTTP. A digest/source/revision match, bounded failures and explicit capture handoff establish consistency under the tested contract. They do not establish authenticated origin, complete upstream change semantics or observed runtime. The transport is not yet connected to workspace controls; its next local interface gate tests understandable fetch/cancel/capture separation before live activation. Practitioner benefit and demand remain unmeasured.
+
 ## Ranked capability hypotheses
 
 This ranking explains research choices; milestone order and execution status belong in TODO and Linear.

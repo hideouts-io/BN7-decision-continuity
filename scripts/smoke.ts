@@ -23,6 +23,7 @@ import { checkDecisionBasis } from "./basis-smoke.ts";
 import { checkBasisComparison } from "./basis-comparison-smoke.ts";
 import { checkActionableUncertainty } from "./uncertainty-smoke.ts";
 import { checkSourceFileIntake } from "./source-file-smoke.ts";
+import { checkSourceAdapter } from "./source-adapter-smoke.ts";
 import { checkBasisReceipts } from "./basis-receipts-smoke.ts";
 import { checkComparisonPacket } from "./comparison-packet-smoke.ts";
 import { checkUncertaintyBasis } from "./uncertainty-basis-smoke.ts";
@@ -311,6 +312,7 @@ try {
     await checkBasisComparison(browser, url);
     await checkActionableUncertainty(browser, url);
     await checkSourceFileIntake(browser, url);
+    await checkSourceAdapter(browser, url);
     await checkBasisReceipts(browser, url);
     await checkComparisonPacket(browser, url);
     await checkUncertaintyBasis(browser, url);

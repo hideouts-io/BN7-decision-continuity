@@ -1,0 +1,14 @@
+{
+  "artifactSchemaVersion": 1,
+  "sourceId": "00000000-0000-4000-8000-000000000065",
+  "sourceReference": "https://example.org/synthetic/00000000-0000-4000-8000-000000000065.json",
+  "revision": "local-r1",
+  "sourceUpdatedAt": "2026-10-06T00:00:18.000Z",
+  "capturedAt": "2026-10-06T00:00:20.000Z",
+  "requestedPermissions": ["documents:read", "documents:write", "documents:delete"],
+  "grantedPermissions": ["documents:read"],
+  "environment": "Production",
+  "provenance": "Synthetic",
+  "observedActivity": "Not observed",
+  "note": "Fully synthetic source-file artifact pinned for local read-only transport rehearsal; this declares no source authenticity or runtime activity."
+}

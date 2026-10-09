@@ -36,7 +36,11 @@ export async function fillCreation(page: Page, title: string): Promise<void> {
   await page.getByTestId("create-source").fill("Fictional research manifest");
   await page.getByTestId("create-time").fill(baselineTime);
   await page.getByTestId("create-note").fill("Synthetic baseline: read-only request with separately declared read access. No runtime observed.");
-  await page.getByTestId("create-synthetic").check();
+  const acknowledgement = page.getByTestId("create-synthetic");
+  await acknowledgement.focus();
+  assert.equal(await acknowledgement.evaluate((element): boolean => element === document.activeElement), true);
+  if (!await acknowledgement.isChecked()) await page.keyboard.press("Space");
+  assert.equal(await acknowledgement.isChecked(), true);
 }
 async function create(page: Page, title: string): Promise<AuthoredState> {
   await page.goto(`${url}/decisions.html`);

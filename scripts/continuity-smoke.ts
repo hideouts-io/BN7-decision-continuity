@@ -48,6 +48,14 @@ async function outcome(page: Page, value: string, statement: string): Promise<vo
   await page.getByTestId("authored-record-outcome").focus();
   await page.keyboard.press("Enter");
 }
+async function openReview(page: Page): Promise<void> {
+  const control = page.getByTestId("authored-open-review");
+  await control.focus();
+  assert.equal(await control.evaluate((element): boolean => element === document.activeElement), true);
+  await page.keyboard.press("Enter");
+  await page.getByTestId("authored-review-form").waitFor({ state: "visible" });
+  assert.equal(await page.getByTestId("authored-outcome").evaluate((element): boolean => element === document.activeElement), true);
+}
 async function download(page: Page, testId: string): Promise<string> {
   const downloading = page.waitForEvent("download");
   await page.getByTestId(testId).click();
@@ -104,9 +112,7 @@ export async function checkDecisionContinuity(browser: Browser, url: string): Pr
     assert.equal(versionB.reviews.length, 0, "A changed source must never automatically open a review.");
     assert.equal(await page.getByTestId("authored-open-review").isEnabled(), true);
     assert.ok((await page.getByTestId("continuity-change").innerText()).includes("+ documents:write"));
-    await page.getByTestId("authored-open-review").focus();
-    await page.keyboard.press("Enter");
-    assert.equal(await page.getByTestId("authored-outcome").evaluate((element): boolean => element === document.activeElement), true);
+    await openReview(page);
     const openBytes = await snapshot(page);
     await page.locator("#authored-capture-form").dispatchEvent("submit");
     await page.getByTestId("authored-error").waitFor({ state: "visible" });
@@ -157,7 +163,7 @@ export async function checkDecisionContinuity(browser: Browser, url: string): Pr
     assert.ok((await page.getByTestId("continuity-change").innerText()).includes("+ documents:delete"));
     assert.ok(!(await page.getByTestId("continuity-change").innerText()).includes("+ documents:write"), "Writing was already part of the applicable evidence; comparison must not reuse original A.");
     assert.ok((await page.getByTestId("continuity-why").innerText()).includes("revision 3"));
-    await page.getByTestId("authored-open-review").click();
+    await openReview(page);
     const secondOpen = await saved(page);
     assert.deepEqual(secondOpen.reviews[1]?.basis, revisedBasis, "The second review binds to the exact revised decision, evidence and rule boundary.");
     assert.deepEqual(secondOpen.outcomes, revised.outcomes);
@@ -266,7 +272,7 @@ export async function checkDecisionContinuity(browser: Browser, url: string): Pr
     // Seed a valid large synthetic history, then exercise the real UI/storage append boundary.
     await create(page, "Recoverable-size boundary control", url);
     await capture(page, ["documents:read", "documents:write"], ["documents:read"], "Synthetic write request used for a large-history persistence boundary test.");
-    await page.getByTestId("authored-open-review").click();
+    await openReview(page);
     let nearLimit: ContinuityState = await saved(page);
     const largeRationale: string = "🧪".repeat(1000);
     const largeStatement: string = "🧪".repeat(500);
@@ -296,7 +302,7 @@ export async function checkDecisionContinuity(browser: Browser, url: string): Pr
     assert.deepEqual(await snapshot(page), nearLimitBytes, "Oversized appends must never truncate or rewrite the saved history.");
     await create(page, "Withdrawn approval control", url);
     await capture(page, ["documents:read", "documents:write"], ["documents:read"], "Synthetic changed request preceding withdrawal; no actual grant or execution observed.");
-    await page.getByTestId("authored-open-review").click();
+    await openReview(page);
     await outcome(page, "withdraw", "Withdraw this synthetic approval; a new approval requires a new decision and preserved independent basis.");
     const withdrawn = await saved(page);
     assert.equal(applicableBasis(withdrawn), null);
