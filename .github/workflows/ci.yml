@@ -34,3 +34,11 @@ jobs:
         run: npm run smoke
       - name: Rehearse the real loopback source adapter
         run: npm run rehearse:adapter
+      - name: Retain synthetic browser diagnostics after a failure
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: synthetic-browser-diagnostics
+          path: output/playwright/*.png
+          if-no-files-found: error
+          retention-days: 3
