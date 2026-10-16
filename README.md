@@ -61,6 +61,10 @@ The manifest records preparation time and source/artifact SHA-256 hashes. It des
 
 ## Start in the independent workspace
 
+The workspace opens with a focused **decision story**: supporting decision evidence → latest captured evidence → reason for review → recorded human outcome. Choose a decision to see its exact monitored field, declarations and human context. Record links open the existing inspector; **Return to decision story** restores the originating control and reading position. **Compare recorded states** selects the active decision's recorded perspective and the latest perspective in the validated comparison panel. These are temporary views and write no history.
+
+An open review has its own frozen evidence target. When that differs from the latest capture, the story names both captures separately. Deferral keeps the review open and preserves the active decision basis. A satisfied evidence requirement remains separate from a human decision outcome. The compact rows below retain the other decisions and their independent rule results; supporting relationships, exact records, capture, review and history remain reachable through the section navigation.
+
 Open [Decision workspace · v6](http://127.0.0.1:5173/impact.html?format=6). The sidebar also opens a single authored decision (v4), the guided example and compatible earlier formats. Creating or restoring a case unlocks its sections; an unavailable destination explains what is needed and writes nothing. Section links move keyboard focus and preserve the selected session. Import navigation opens the disclosure without reading a file or restoring data.
 
 1. Enter a fictional reviewer code, confirm synthetic use and preserve the baseline. Three explicit decision rules share one canonical source.

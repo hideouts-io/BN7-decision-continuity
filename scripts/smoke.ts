@@ -31,6 +31,7 @@ import { checkBasisNavigator } from "./basis-navigator-smoke.ts";
 import { checkBasisReviewBrief } from "./basis-review-brief-smoke.ts";
 import { checkBasisReferenceNavigation } from "./basis-reference-smoke.ts";
 import { checkWorkspaceFoundation } from "./workspace-smoke.ts";
+import { checkDecisionStory } from "./decision-story-smoke.ts";
 
 const url: string = "http://127.0.0.1:5189";
 const rationale: string = "The changed request contradicts the read-only assumption. Declared grants remain read-only and write activity is not observed.";
@@ -320,6 +321,7 @@ try {
     await checkBasisReviewBrief(browser, url);
     await checkBasisReferenceNavigation(browser, url);
     await checkWorkspaceFoundation(browser, url);
+    await checkDecisionStory(browser, url);
     await checkKeyboardAndMobile(keyboard);
     await checkInvalidStorage(invalid, completed);
     console.log("decision_continuity_smoke_passed", { workflow: true, guidance: true, readOnlyNavigation: true, outcomeExplanations: true, sessions: true, legacyPreserved: true, keyboard: true, narrowScreen: true, accessibility: true, persistence: true, invalidStorage: true, critiquePreparation: true, sessionRecovery: true, authoredDecisions: true, repeatedReassessment: true, recordedDecisionBasis: true });
