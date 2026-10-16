@@ -19,6 +19,7 @@ import { checkBasisNavigator } from "./basis-navigator-smoke.ts";
 import { checkBasisReviewBrief } from "./basis-review-brief-smoke.ts";
 import { checkBasisReferenceNavigation } from "./basis-reference-smoke.ts";
 import { checkWorkspaceFoundation } from "./workspace-smoke.ts";
+import { checkDecisionStory } from "./decision-story-smoke.ts";
 import { fillCreation } from "./authored-smoke.ts";
 
 const target = new URL(z.string().parse(process.argv[2]));
@@ -102,5 +103,6 @@ try {
   await checkBasisReviewBrief(browser, url);
   await checkBasisReferenceNavigation(browser, url);
   await checkWorkspaceFoundation(browser, url);
+  await checkDecisionStory(browser, url);
   console.log("decision_continuity_deployment_smoke_passed", { url: target.href, assets: true, allSevenFormats: true, recoveryRouting: true, completeReassessment: true, recordedDecisionBasis: true, actionableUncertainty: true, keyboardMobileAccessibility: true, syntheticOnly: true });
 } finally { await browser.close(); }

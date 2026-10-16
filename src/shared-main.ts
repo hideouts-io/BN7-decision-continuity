@@ -27,6 +27,7 @@ import { urlForSession } from "./sessions.ts";
 import { OutcomeSchema } from "./scenario.ts";
 import { outcomeExplanation } from "./journey.ts";
 import { renderWorkspaceAttention } from "./workspace-attention.ts";
+import { connectDecisionStory } from "./decision-story.ts";
 
 function field(id: string): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement {
   const element = getElement(id);
@@ -78,6 +79,16 @@ let state: SharedWorkspace | null = null;
 let uncertainty: UncertaintyState | null = null;
 const selectedFormat: string | null = new URL(window.location.href).searchParams.get("format");
 const refreshDecisionBasis = connectDecisionBasis();
+const refreshDecisionStory = connectDecisionStory((decisionId: string): void => {
+  sharedDecision(current(), decisionId);
+  if (field("shared-review-decision").value !== decisionId) {
+    field("shared-review-decision").value = decisionId;
+    form("shared-outcome-form").reset();
+    refreshReview();
+  }
+  const section = getElement("shared-review-section");
+  section.focus(); section.scrollIntoView({ block: "start", behavior: "instant" });
+}, action);
 const refreshUncertainty = connectUncertainty({
   current: (): UncertaintyState | null => uncertainty,
   appendRequirement: (decisionId, input): void => {
@@ -135,10 +146,12 @@ function refreshReview(): void {
   refreshUncertainty();
 }
 function show(next: SharedWorkspace): void {
+  document.body.dataset.workspaceActive = "true";
   renderSharedState(next);
   renderWorkspaceAttention(next);
   if (next.schemaVersion === 6) renderClarificationHistory(next);
   refreshDecisionBasis(uncertainty ?? (next.schemaVersion === 6 ? next : null));
+  refreshDecisionStory(next);
   const selection = field("shared-review-decision"), previous: string = selection.value;
   if (!(selection instanceof HTMLSelectElement)) throw new TypeError("Decision picker must be a select.");
   selection.replaceChildren(...next.originalDecisions.map((record): HTMLOptionElement => {
